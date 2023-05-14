@@ -46,7 +46,7 @@ def already_done(path, stemmo):
 
 
 for thing in paths:
-    print(thing)
+    # print(thing)
     donners = already_done(init, thing)
 
     # print("already done: ", donners)
