@@ -18,10 +18,32 @@ jobs:
         with:                                 
           python-version: '3.12'
           cache: 'pip'
+
+      - uses: actions/cache@v2
+        name: Configure pip caching
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Cache Playwright browsers
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/ms-playwright/
+          key: ${{ runner.os }}-browsers
   
-      - name: 💿 Install Requirements                             
-        run: pip install -r requirements.txt
-        
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          
+      - name: Install shot-scraper
+        run: |
+          shot-scraper install
+          
+      # - name: Install wordnet
+      #   run: |
+      #     nltk.download('wordnet')
+
       - name: 🍳 Scrape top stories
         run: python3 Scrapers/top_stories.py
         

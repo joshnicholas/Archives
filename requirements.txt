@@ -1,5 +1,4 @@
 pandas
 nltk
-ast
 shot-scraper
 pytz
