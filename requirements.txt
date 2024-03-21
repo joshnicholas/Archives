@@ -1,7 +1,5 @@
 pandas
 nltk
 ast
-subprocess
-re
 shot-scraper
 pytz
