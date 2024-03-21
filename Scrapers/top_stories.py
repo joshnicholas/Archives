@@ -86,12 +86,12 @@ print("Scraping the ABC")
 
 abc = shot_grabber('https://www.abc.net.au/news', 'ABC', 'Archive/abc_top',
  """
-Array.from(document.querySelectorAll('[data-uri="recommendation://collection/abc-news-homepage-sidebar"]'), el => {
-    let Headline = el.querySelector('a').innerText;
-    let Url = el.querySelector('a')['href']
+    var contexto = document.querySelector('[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
+    Array.from(contexto.querySelectorAll('a'), el => {
+    let Headline = el.innerText;
+    let Url = el['href']
     return {Headline, Url};
-
-})""")
+    })""")
 
 print("Scraping News")
 
