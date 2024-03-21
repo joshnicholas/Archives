@@ -72,37 +72,37 @@ def shot_grabber(urlo, publication, out_path, javascript_code):
 
 print("Scraping the SMH")
 
-# smh = shot_grabber('https://www.smh.com.au/', 'SMH', 'Archive/smh_top',
-#     """
-#     var contexto = document.querySelector('[data-an-name="Most Popular"]')
-#     Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
-#     let Headline = el.querySelector('a').innerText;
-#     let Url = el.querySelector('a')['href']
-#     return {Headline, Url};
-#     })""")
+smh = shot_grabber('https://www.smh.com.au/', 'SMH', 'Archive/smh_top',
+    """
+    var contexto = document.querySelector('[data-an-name="Most Popular"]')
+    Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
+    let Headline = el.querySelector('a').innerText;
+    let Url = el.querySelector('a')['href']
+    return {Headline, Url};
+    })""")
 
 
 print("Scraping the ABC")
 
-# abc = shot_grabber('https://www.abc.net.au/news', 'ABC', 'Archive/abc_top',
-#  """
-# Array.from(document.querySelectorAll('[data-uri="recommendation://collection/abc-news-homepage-sidebar"]'), el => {
-#     let Headline = el.querySelector('a').innerText;
-#     let Url = el.querySelector('a')['href']
-#     return {Headline, Url};
+abc = shot_grabber('https://www.abc.net.au/news', 'ABC', 'Archive/abc_top',
+ """
+Array.from(document.querySelectorAll('[data-uri="recommendation://collection/abc-news-homepage-sidebar"]'), el => {
+    let Headline = el.querySelector('a').innerText;
+    let Url = el.querySelector('a')['href']
+    return {Headline, Url};
 
-# })""")
+})""")
 
-# print("Scraping News")
+print("Scraping News")
 
-# news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
-#     javascript_code = """
-#     var contexto = document.querySelector('.most-popular-content')
-#     Array.from(contexto.querySelectorAll('a'), el => {
-#     let Headline = el.innerText;
-#     let Url = el['href']
-#     return {Headline, Url};
-#     })""")
+news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
+    javascript_code = """
+    var contexto = document.querySelector('.most-popular-content')
+    Array.from(contexto.querySelectorAll('a'), el => {
+    let Headline = el.innerText;
+    let Url = el['href']
+    return {Headline, Url};
+    })""")
 
 
 print("Scraping Graun")
