@@ -5,11 +5,15 @@ import pandas as pd
 import datetime 
 import pytz
 
+import nltk
+nltk.download('wordnet')
+
 today = datetime.datetime.now()
 scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))
 format_scrape_time = datetime.datetime.strftime(scrape_time, "%Y_%m_%d_%H")
 
 def create_search(what, frame):
+
     from nltk.stem import WordNetLemmatizer
     import re 
 
