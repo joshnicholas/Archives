@@ -43,7 +43,7 @@ def create_search(what, frame):
 
 def shot_grabber(urlo, publication, out_path, javascript_code):
 
-    result = subprocess.check_output(['shot-scraper', 'javascript', urlo, javascript_code, "--user-agent", "Firefox"])
+    result = subprocess.check_output(['shot-scraper', 'javascript', urlo, javascript_code, "--user-agent", "Firefox", '--bypass-csp'])
 
     resulto = ast.literal_eval(result.decode("utf-8"))
 
