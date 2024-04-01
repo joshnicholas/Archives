@@ -1,4 +1,5 @@
 pandas
 nltk
-shot-scraper
 pytz
+playwright
+playwright_stealth
