@@ -35,6 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          playwright install firefox
 
       - name: 🍳 Scrape top stories
         run: python3 Scrapers/top_stories.py
