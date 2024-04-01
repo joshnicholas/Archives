@@ -2,4 +2,4 @@ pandas
 nltk
 pytz
 playwright
-playwright_stealth
+playwright-stealth
