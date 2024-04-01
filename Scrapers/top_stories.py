@@ -1,7 +1,7 @@
 import pandas as pd 
 
 from playwright.sync_api import sync_playwright
-from playwright_stealth import stealth_sync
+# from playwright_stealth import stealth_sync
 
 import datetime 
 import pytz
@@ -90,14 +90,14 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 
             page = context.new_page()
 
-            stealth_sync(page)
+            # stealth_sync(page)
 
             page.goto(urlo)
 
-            print('Before waiting')
+            # print('Before waiting')
             waiting_around = page.locator(awaito)
             waiting_around.wait_for()
-            print("After waiting")
+            # print("After waiting")
 
             resulto = page.evaluate(javascript_code)
 
@@ -121,6 +121,7 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
             with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
                 frame.to_json(f, orient='records')
 
+            # print("Lenno: ", len(frame))
             return frame 
 
         except Exception as e:
@@ -134,65 +135,65 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
 
 
-# print("Scraping the SMH")
+print("Scraping the SMH")
 
-# try:
-#     smh = shot_grabber('https://www.smh.com.au/', 'SMH', 'Archive/smh_top',
-#         """
-#         var contexto = document.querySelector('[data-an-name="Most Popular"]')
-#         Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
-#         let Headline = el.querySelector('a').innerText;
-#         let Url = el.querySelector('a')['href']
-#         return {Headline, Url};
-#         })""",
-#         '[data-an-name="Most Popular"]')
-# except Exception as e:
-#     print(e)
+try:
+    smh = shot_grabber('https://www.smh.com.au/', 'SMH', 'Archive/smh_top',
+        """
+        var contexto = document.querySelector('[data-an-name="Most Popular"]')
+        Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
+        let Headline = el.querySelector('a').innerText;
+        let Url = el.querySelector('a')['href']
+        return {Headline, Url};
+        })""",
+        '[data-an-name="Most Popular"]')
+except Exception as e:
+    print(e)
 
 
-# print("Scraping the ABC")
-# try:
-#     abc = shot_grabber('https://www.abc.net.au/news', 'ABC', 'Archive/abc_top',
-#     """
-#         var contexto = document.querySelector('[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
-#         Array.from(contexto.querySelectorAll('a'), el => {
-#         let Headline = el.innerText;
-#         let Url = el['href']
-#         return {Headline, Url};
-#         })""",
-#         '[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
-# except Exception as e:
-#     print(e)
+print("Scraping the ABC")
+try:
+    abc = shot_grabber('https://www.abc.net.au/news', 'ABC', 'Archive/abc_top',
+    """
+        var contexto = document.querySelector('[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
+        Array.from(contexto.querySelectorAll('a'), el => {
+        let Headline = el.innerText;
+        let Url = el['href']
+        return {Headline, Url};
+        })""",
+        '[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
+except Exception as e:
+    print(e)
 
-# print("Scraping News")
+print("Scraping News")
 
-# try:
-#     news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
-#         """
-#         var contexto = document.querySelector('.most-popular-content')
-#         Array.from(contexto.querySelectorAll('a'), el => {
-#         let Headline = el.innerText;
-#         let Url = el['href']
-#         return {Headline, Url};
-#         })""",
-#         '.most-popular-content')
+try:
+    news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
+        """
+        var contexto = document.querySelector('.most-popular-content')
+        Array.from(contexto.querySelectorAll('a'), el => {
+        let Headline = el.innerText;
+        let Url = el['href']
+        return {Headline, Url};
+        })""",
+        '.most-popular-content')
     
-# except Exception as e:
-#     print(e)
+except Exception as e:
+    print(e)
 
-# print("Scraping Graun")
-# try:
-#     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
-#         """
-#         var contexto = document.querySelector('[data-link-name="most-viewed"]')
-#         Array.from(contexto.querySelectorAll('a'), el => {
-#         let Headline = el.innerText;
-#         let Url = el['href']
-#         return {Headline, Url};
-#         })""",
-#         '[data-link-name="most-viewed"]')
-# except Exception as e:
-#     print(e)
+print("Scraping Graun")
+try:
+    graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
+        """
+        var contexto = document.querySelector('[data-link-name="most-viewed"]')
+        Array.from(contexto.querySelectorAll('a'), el => {
+        let Headline = el.innerText;
+        let Url = el['href']
+        return {Headline, Url};
+        })""",
+        '[data-link-name="most-viewed"]')
+except Exception as e:
+    print(e)
 
 
 print("Scraping The Age")
