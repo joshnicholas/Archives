@@ -191,7 +191,7 @@ try:
         let Url = el['href']
         return {Headline, Url};
         })""",
-        '[data-link-name="most-viewed"]')
+        '[data-link-name="Most viewed"]')
 except Exception as e:
     print(e)
 
