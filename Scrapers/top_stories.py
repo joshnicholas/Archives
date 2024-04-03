@@ -185,7 +185,7 @@ print("Scraping Graun")
 try:
     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
         """
-        var contexto = document.querySelector('[data-link-name="most-viewed"]')
+         var contexto = document.querySelector('[data-link-name="Most viewed"]')
         Array.from(contexto.querySelectorAll('a'), el => {
         let Headline = el.innerText;
         let Url = el['href']
