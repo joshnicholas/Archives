@@ -224,3 +224,20 @@ try:
         '[data-an-name="Most Popular"]')
 except Exception as e:
     print(e)
+
+
+print("Scraping Brisbane times")
+
+try:
+    age = shot_grabber('https://www.brisbanetimes.com.au/', "Brisbane Times", 'Archive/brisbane_times'
+                      ,
+        """
+        var contexto = document.querySelector('[data-an-name="Most Popular"]')
+        Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
+        let Headline = el.querySelector('a').innerText;
+        let Url = el.querySelector('a')['href']
+        return {Headline, Url};
+        })""",
+        '[data-an-name="Most Popular"]')
+except Exception as e:
+    print(e)
