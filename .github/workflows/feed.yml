@@ -19,6 +19,10 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
       - name: 🍳 Scrape feed
         run: python3 Scrapers/feed_scraper.py
         
