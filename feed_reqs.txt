@@ -2,3 +2,4 @@ feedparser
 dateparser
 bs4
 requests
+pandas
