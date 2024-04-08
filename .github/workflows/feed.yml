@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r feed_reqs.txt
 
       - name: 🍳 Scrape feed
         run: python3 Scrapers/feed_scraper.py

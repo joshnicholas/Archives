@@ -2,6 +2,3 @@ pandas
 nltk
 pytz
 playwright
-feedparser
-dateparser
-bs4
