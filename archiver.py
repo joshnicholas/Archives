@@ -21,7 +21,13 @@ links = frame['Links'].unique().tolist()
 
 
 for linko in links:
-    archiver = savepagenow.capture(linko)
-    print(archiver)
+    try:
+        archiver = savepagenow.capture(linko)
+        print(archiver)
 
-    rand_delay(30)
+        rand_delay(30)
+    except Exception as e:
+       print(e)
+       continue
+
+    
