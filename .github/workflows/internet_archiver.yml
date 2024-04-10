@@ -24,7 +24,7 @@ jobs:
           pip install -r wayback_reqs.txt
 
       - name: 🍳 Scrape feed
-        run: python3 Scrapers/archiver.py
+        run: python3 archiver.py
         
       - name: 🚀 Commit and push if it changed
         run: |
