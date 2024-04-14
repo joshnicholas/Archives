@@ -5,6 +5,10 @@ from playwright.sync_api import sync_playwright
 
 import datetime 
 import pytz
+import requests
+from pytrends.request import TrendReq
+from gnews import GNews
+import json 
 
 import nltk
 nltk.download('wordnet')
@@ -239,5 +243,136 @@ try:
         return {Headline, Url};
         })""",
         '[data-an-name="Most Popular"]')
+except Exception as e:
+    print(e)
+
+
+def get_google(out_path):
+
+    google_news = GNews(language='en', country='AU', period='2h')
+    aus_news = google_news.get_top_news()
+
+    records = []
+    for thingo in aus_news:
+        record = {"Headline": thingo['title'], "Url": thingo['url'], 'publication': thingo['publisher']['title'],
+                "Publish datetime": thingo['published date']}
+        records.append(record)
+
+    frame = pd.DataFrame.from_records(records)
+    frame['scraped_datetime'] = format_scrape_time
+    frame['Rank'] = frame.index + 1
+
+    frame = create_search("Headline", frame)
+
+    frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
+
+    with open(f'{out_path}/latest.json', 'w') as f:
+        frame.to_json(f, orient='records')
+
+    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+        frame.to_json(f, orient='records')
+
+
+rand_delay(5)
+
+try:
+    print("Get Google News")
+    get_google('Archive/google_top')
+except Exception as e:
+    print(e)
+
+
+def get_wiki(urlo, out_path):
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+    'Accept-Language': "en-GB,en-US;q=0.9,en;q=0.8",
+    "Referer": 'https://www.google.com',
+    "DNT":'1'}
+
+    wiki_r = requests.get(urlo, headers=headers)
+
+    if wiki_r.status_code != 404:
+
+        # print(wiki_r.url)
+
+        # print(wiki_r.text)
+
+        wiki_trends = json.loads(wiki_r.text)
+        wiki_trends = wiki_trends['items'][0]['articles']
+        # wiki_trends = wiki_trends[2:52]
+
+        # wiki_trends = [x['article'] for x in wiki_trends]
+
+
+
+        df = pd.DataFrame(wiki_trends)
+        df = df.rename(columns={"article": "Page", "views": "Views", 'rank': "Rank"})
+        # df['Page'] = df['Page'].str.replace("_", " ")
+
+        # %%
+
+        zdf = df.copy()
+        zdf = zdf[['Rank', 'Page', 'Views']]
+        zdf['scraped_datetime'] = format_scrape_time
+
+        frame = create_search("Page", zdf)
+
+        with open(f'{out_path}/latest.json', 'w') as f:
+            frame.to_json(f, orient='records')
+
+        with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+            frame.to_json(f, orient='records')
+
+rand_delay(5)
+
+try:
+    print("Getting Wiki")
+    # utc_now = datetime.datetime.utcnow()
+    utc_now = datetime.datetime.now(datetime.timezone.utc)
+    utc_then = utc_now - datetime.timedelta(days=1)
+
+    utc_month = datetime.date.strftime(utc_then, '%m')
+    utc_year = datetime.date.strftime(utc_then, '%Y')
+    utc_day = datetime.date.strftime(utc_then, '%d')
+
+    utc_reverse_date = utc_then.strftime('%Y-%m-%d')
+    utc_hour = utc_then.strftime('%H')
+
+    wiki_linko = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia.org/all-access/{utc_year}/{utc_month}/{utc_day}"
+    get_wiki(wiki_linko, 'Archive/wiki')
+
+except Exception as e:
+    print(e)
+
+
+
+def get_goog_trends(out_path):
+
+    pytrend = TrendReq(hl='en-US', tz=360)
+
+    df = pytrend.trending_searches(pn='australia')
+    df.rename(columns={0: "Search"}, inplace=True)
+
+    df['scraped_datetime'] = format_scrape_time
+
+    zdf = df.copy()
+    zdf['Rank'] = zdf.index + 1
+
+    zdf = zdf[['Rank', 'Search', 'scraped_datetime']]
+
+    frame = create_search("Search", zdf)
+
+    with open(f'{out_path}/latest.json', 'w') as f:
+        frame.to_json(f, orient='records')
+
+    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+        frame.to_json(f, orient='records')
+
+rand_delay(5)
+
+print("Get Aus google trends")
+
+try:
+    get_goog_trends("Archive/google")
+
 except Exception as e:
     print(e)
