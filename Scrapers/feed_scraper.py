@@ -94,8 +94,6 @@ graun = graun_grabber('https://www.theguardian.com/profile/josh-nicholas/rss')
 
 # %%
 
-import pandas as pd 
-
 out_path = 'Archive/feed'
 
 old = pd.read_json(f'{out_path}/latest.json')
