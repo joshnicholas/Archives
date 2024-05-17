@@ -138,6 +138,7 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
                 print("Trying again")
                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
 
+listo = []
 
 print("Scraping the SMH")
 
@@ -151,6 +152,7 @@ try:
         return {Headline, Url};
         })""",
         '[data-an-name="Most Popular"]')
+    listo.append(smh)
 except Exception as e:
     print(e)
 
@@ -166,6 +168,7 @@ try:
         return {Headline, Url};
         })""",
         '[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
+    listo.append(abc)
 except Exception as e:
     print(e)
 
@@ -181,23 +184,26 @@ try:
         return {Headline, Url};
         })""",
         '.most-popular-content')
-    
+    listo.append(news)
 except Exception as e:
     print(e)
 
+
+
 print("Scraping Graun")
-try:
-    graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
-        """
-         var contexto = document.querySelector('[data-link-name="Most viewed"]')
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })""",
-        '[data-link-name="Most viewed"]')
-except Exception as e:
-    print(e)
+# try:
+#     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
+#         """
+#          var contexto = document.querySelector('[data-link-name="Most viewed"]')
+#         Array.from(contexto.querySelectorAll('a'), el => {
+#         let Headline = el.innerText;
+#         let Url = el['href']
+#         return {Headline, Url};
+#         })""",
+#         '[data-link-name="Most viewed"]')
+#     listo.append(graun)
+# except Exception as e:
+#     print(e)
 
 try:
     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
@@ -209,6 +215,7 @@ try:
         return {Headline, Url};
         })""",
         '[data-link-name="most-viewed"]')
+    listo.append(graun)
 except Exception as e:
     print(e)
 
@@ -226,6 +233,7 @@ try:
         return {Headline, Url};
         })""",
         '[data-an-name="Most Popular"]')
+    listo.append(age)
 except Exception as e:
     print(e)
 
@@ -233,7 +241,7 @@ except Exception as e:
 print("Scraping Brisbane times")
 
 try:
-    age = shot_grabber('https://www.brisbanetimes.com.au/', "Brisbane Times", 'Archive/brisbane_times'
+    bris = shot_grabber('https://www.brisbanetimes.com.au/', "Brisbane Times", 'Archive/brisbane_times'
                       ,
         """
         var contexto = document.querySelector('[data-an-name="Most Popular"]')
@@ -243,6 +251,7 @@ try:
         return {Headline, Url};
         })""",
         '[data-an-name="Most Popular"]')
+    listo.append(bris)
 except Exception as e:
     print(e)
 
@@ -272,12 +281,15 @@ def get_google(out_path):
     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
         frame.to_json(f, orient='records')
 
+    return frame
 
 rand_delay(5)
 
 try:
     print("Get Google News")
-    get_google('Archive/google_top')
+    goog = get_google('Archive/google_top')
+
+    listo.append(goog)
 except Exception as e:
     print(e)
 
@@ -321,7 +333,8 @@ def get_wiki(urlo, out_path):
 
         with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
             frame.to_json(f, orient='records')
-
+        return frame 
+    
 rand_delay(5)
 
 try:
@@ -338,8 +351,8 @@ try:
     utc_hour = utc_then.strftime('%H')
 
     wiki_linko = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia.org/all-access/{utc_year}/{utc_month}/{utc_day}"
-    get_wiki(wiki_linko, 'Archive/wiki')
-
+    wiki = get_wiki(wiki_linko, 'Archive/wiki')
+    listo.append(wiki)
 except Exception as e:
     print(e)
 
@@ -366,13 +379,18 @@ def get_goog_trends(out_path):
 
     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
         frame.to_json(f, orient='records')
-
+    return frame
 rand_delay(5)
 
 print("Get Aus google trends")
 
 try:
-    get_goog_trends("Archive/google")
-
+    goog_trendo = get_goog_trends("Archive/google")
+    listo.append(goog_trendo)
 except Exception as e:
     print(e)
+
+cat = pd.concat(listo)
+
+with open(f'combined/top_stories.json', 'w') as f:
+    cat.to_json(f, orient='records')
