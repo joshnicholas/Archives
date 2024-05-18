@@ -407,5 +407,5 @@ except Exception as e:
 
 
 
-with open("combined/top_stories.json", "w") as f: 
+with open("Combined/top_stories.json", "w") as f: 
     json.dump(dicto, f)
