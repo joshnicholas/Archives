@@ -171,7 +171,7 @@ try:
         })""",
         '[data-uri="recommendation://collection/abc-news-homepage-sidebar"]')
     # listo.append(abc)
-    dicto['abc'] = abc.to_json(orient='records')
+    dicto['abc'] = abc.to_dict(orient='records')
 except Exception as e:
     print(e)
 
@@ -188,7 +188,7 @@ try:
         })""",
         '.most-popular-content')
     # listo.append(news)\
-    dicto['news'] = news.to_json(orient='records')
+    dicto['news'] = news.to_dict(orient='records')
 except Exception as e:
     print(e)
 
@@ -220,7 +220,7 @@ try:
         })""",
         '[data-link-name="most-viewed"]')
     # listo.append(graun)
-    dicto['graun'] = graun.to_json(orient='records')
+    dicto['graun'] = graun.to_dict(orient='records')
 except Exception as e:
     print(e)
 
@@ -239,7 +239,7 @@ try:
         })""",
         '[data-an-name="Most Popular"]')
     # listo.append(age)
-    dicto['age'] = age.to_json(orient='records')
+    dicto['age'] = age.to_dict(orient='records')
 except Exception as e:
     print(e)
 
@@ -258,7 +258,7 @@ try:
         })""",
         '[data-an-name="Most Popular"]')
     # listo.append(bris)
-    dicto['bris'] = bris.to_json(orient='records')
+    dicto['bris'] = bris.to_dict(orient='records')
 except Exception as e:
     print(e)
 
@@ -295,7 +295,7 @@ rand_delay(5)
 try:
     print("Get Google News")
     goog = get_google('Archive/google_top')
-    dicto['goog_news'] = goog.to_json(orient='records')
+    dicto['goog_news'] = goog.to_dict(orient='records')
     # listo.append(goog)
 except Exception as e:
     print(e)
@@ -360,7 +360,7 @@ try:
     wiki_linko = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia.org/all-access/{utc_year}/{utc_month}/{utc_day}"
     wiki = get_wiki(wiki_linko, 'Archive/wiki')
     # listo.append(wiki)
-    dicto['wiki'] = wiki.to_json(orient='records')
+    dicto['wiki'] = wiki.to_dict(orient='records')
 except Exception as e:
 
     print(e)
@@ -396,7 +396,7 @@ print("Get Aus google trends")
 try:
     goog_trendo = get_goog_trends("Archive/google")
     # listo.append(goog_trendo)
-    dicto['goog_trends'] = goog_trendo.to_json(orient='records')
+    dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
 except Exception as e:
     print(e)
 
