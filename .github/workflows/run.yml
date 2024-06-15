@@ -1,7 +1,7 @@
 name: Scraper
 
 env: 
-  gitty = ${{ secrets.gitty }}
+  gitty = ${{ secrets.GITTY }}
 on:
   workflow_dispatch:
   schedule:
