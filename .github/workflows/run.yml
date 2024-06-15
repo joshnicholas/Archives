@@ -1,5 +1,7 @@
 name: Scraper
 
+env: 
+  gitty = ${{ secrets.gitty }}
 on:
   workflow_dispatch:
   schedule:

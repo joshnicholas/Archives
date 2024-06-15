@@ -1,3 +1,4 @@
+# %%
 import pandas as pd 
 
 from playwright.sync_api import sync_playwright
@@ -10,12 +11,22 @@ from pytrends.request import TrendReq
 from gnews import GNews
 import json 
 
+
+import os 
+import pathlib
+pathos = pathlib.Path(__file__).parent.parent
+os.chdir(pathos)
+
+print(os.getcwd())
+
 import nltk
 nltk.download('wordnet')
 
 today = datetime.datetime.now()
 scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))
 format_scrape_time = datetime.datetime.strftime(scrape_time, "%Y_%m_%d_%H")
+
+# %%
 
 def rand_delay(num):
   import random 
@@ -137,6 +148,8 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
             if e == 'Timeout 30000ms exceeded.' and tries <= 3:
                 print("Trying again")
                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
+
+# %%
 
 # listo = []
 dicto = {}
@@ -262,6 +275,7 @@ try:
 except Exception as e:
     print(e)
 
+# %%
 
 def get_google(out_path):
 
@@ -300,6 +314,7 @@ try:
 except Exception as e:
     print(e)
 
+# %%
 
 def get_wiki(urlo, out_path):
     headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
@@ -326,8 +341,6 @@ def get_wiki(urlo, out_path):
         df = pd.DataFrame(wiki_trends)
         df = df.rename(columns={"article": "Page", "views": "Views", 'rank': "Rank"})
         # df['Page'] = df['Page'].str.replace("_", " ")
-
-        # %%
 
         zdf = df.copy()
         zdf = zdf[['Rank', 'Page', 'Views']]
@@ -365,7 +378,7 @@ except Exception as e:
 
     print(e)
 
-
+# %%
 
 def get_goog_trends(out_path):
 
@@ -409,3 +422,54 @@ except Exception as e:
 
 with open("Combined/top_stories.json", "w") as f: 
     json.dump(dicto, f)
+
+
+# %%
+
+from dotenv import load_dotenv
+load_dotenv()
+from github import Github, UnknownObjectException
+
+# %%
+
+
+listo = []
+
+keys = list(dicto.keys())
+exclude = ['goog_trends', 'wiki']
+keys = [x for x in keys if x not in exclude]
+
+for keyo in keys:
+    inter = pd.DataFrame.from_records(dicto[keyo])
+    listo.append(inter)
+
+out_data = pd.concat(listo)
+
+# %%
+
+# %%
+
+def send_to_git(stemmo, repo, what, frame):
+
+    tokeny = os.environ['gitty']
+    latest = f'static/{what}.csv'
+
+    github = Github(tokeny)
+
+    repository = github.get_user().get_repo(repo)
+
+    jsony = frame.to_dict(orient='records')
+    content = json.dumps(jsony)
+
+    def try_file(pathos):
+        try:
+            repository.get_contents(pathos)
+            return True
+        except UnknownObjectException as e:
+            return False
+
+    latters = repository.get_contents(latest)
+    repository.update_file(latest, f"updated_scraped_file_{stemmo}", content, latters.sha)
+
+send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
+# %%

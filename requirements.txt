@@ -5,3 +5,5 @@ playwright
 GNews
 requests
 pytrends
+dotenv
+pygithub
