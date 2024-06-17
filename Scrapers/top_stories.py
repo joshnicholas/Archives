@@ -26,13 +26,15 @@ today = datetime.datetime.now()
 scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))
 format_scrape_time = datetime.datetime.strftime(scrape_time, "%Y_%m_%d_%H")
 
+pub_scrape_time = datetime.datetime.strftime(scrape_time, "%-I:%M%p %d/%m")
+
 # %%
 
 def rand_delay(num):
   import random 
   import time 
   rando = random.random() * num
-  print(rando)
+#   print(rando)
   time.sleep(rando)
 
 
@@ -152,7 +154,7 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 # %%
 
 # listo = []
-dicto = {}
+dicto = {"Pushed": pub_scrape_time}
 
 print("Scraping the SMH")
 
