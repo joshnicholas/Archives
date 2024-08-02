@@ -29,26 +29,29 @@ def micro_process(urlo, cat):
     jsony = json.loads(r.text)
 
     for post in jsony['items']:
-        if cat in post['tags']:
+        try:
+            if cat in post['tags']:
 
-            soup = bs(post['content_html'], 'html.parser')
-            urlo = post['url']
-            stemmo = urlo.split('/')[-1].replace(".html", '')
-            par = soup.find('p').text
+                soup = bs(post['content_html'], 'html.parser')
+                urlo = post['url']
+                stemmo = urlo.split('/')[-1].replace(".html", '')
+                par = soup.find('p').text
 
-            datto = dateparser.parse(post['date_published']).strftime("%Y-%m-%d %H:%M")
-            
-            record = {
-                "Id": stemmo,
-                "Source": "Micro blog",
-                "Headline": par,
-                "Url": urlo,
-                "Date": datto,
-                "Category": cat
+                datto = dateparser.parse(post['date_published']).strftime("%Y-%m-%d %H:%M")
+                
+                record = {
+                    "Id": stemmo,
+                    "Source": "Micro blog",
+                    "Headline": par,
+                    "Url": urlo,
+                    "Date": datto,
+                    "Category": cat
 
-            }
+                }
 
-            records.append(record)
+                records.append(record)
+        except:
+            continue
     return pd.DataFrame.from_records(records)
 
 scribbles = micro_process('https://joshnicholas.blog/feed.json', "Scribbles")
