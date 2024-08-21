@@ -178,7 +178,7 @@ print("Scraping the ABC")
 try:
     abc = shot_grabber('https://www.abc.net.au/news/justin', 'ABC', 'Archive/abc_top',
     """
-        var contexto = document.querySelector('[data-uri="coremedia://collection/10719986"]')
+        var contexto = document.querySelectorAll('[data-component="LinkList"]')[1]
         Array.from(contexto.querySelectorAll('a'), el => {
         let Headline = el.innerText;
         let Url = el['href']
