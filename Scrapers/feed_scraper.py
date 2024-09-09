@@ -101,6 +101,9 @@ out_path = 'Archive/feed'
 
 old = pd.read_json(f'{out_path}/latest.json')
 
+exclude = ['not-safe-to', "new-favourite-thing"]
+# old = old.loc[~old['Id'].isin(exclude)]
+
 
 tog = pd.concat([graun, scribbles, reading])
 
