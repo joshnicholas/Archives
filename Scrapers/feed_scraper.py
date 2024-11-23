@@ -54,10 +54,65 @@ def micro_process(urlo, cat):
             continue
     return pd.DataFrame.from_records(records)
 
-scribbles = micro_process('https://joshnicholas.blog/feed.json', "Scribbles")
+# scribbles = micro_process('https://joshnicholas.blog/feed.json', "Scribbles")
 
-reading = micro_process('https://joshnicholas.blog/feed.json', "linklog")
+# reading = micro_process('https://joshnicholas.blog/feed.json', "linklog")
 
+# print(scribbles)
+
+# %%
+# print(scribbles.columns.tolist())
+# ['Id', 'Source', 'Headline', 'Url', 'Date', 'Category']
+# %%
+
+
+# %%
+### new scribbles
+urlo = 'https://bsky.app/profile/joshnicholas.com/rss'
+reese = feedparser.parse(urlo)
+
+records = []
+
+
+for entry in reese['entries']:
+    # dict_keys(['links', 'link', 'summary', 'summary_detail', 
+    # 'published', 'published_parsed', 'id', 
+    # 'guidislink'])
+
+    datto = time.strftime("%Y-%m-%d %H:%M", entry['published_parsed'])
+
+    catto = ''
+    entro = entry['summary']
+    if "#scribble" in entro:
+        catto = 'Scribble'
+    elif "#linklog" in entro: 
+        catto = 'linklog'
+    else:
+        catto = 'Bsky'
+
+    print(entry.keys())
+    record = {
+        "Url": entry['link'],
+        "Id": entry['id'], 
+        "Source": "Bsky",
+        "Headline": entry['summary'],
+        "Date": datto,
+        "Category": catto
+
+    }
+    print(record)
+
+    records.append(record)
+
+sky = pd.DataFrame.from_records(records)
+sky = sky.loc[sky['Category'].isin(['Scribble', 'linklog'])]
+
+# print(sky)
+# return pd.DataFrame.from_records(records)
+
+# %%
+
+# %%
 
 # %%
 
@@ -105,7 +160,9 @@ exclude = ['not-safe-to', "new-favourite-thing"]
 # old = old.loc[~old['Id'].isin(exclude)]
 
 
-tog = pd.concat([graun, scribbles, reading])
+# tog = pd.concat([graun, scribbles, reading])
+# tog = pd.concat([graun, scribbles, reading, sky])
+tog = pd.concat([graun, sky])
 
 with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
     tog.to_json(f, orient='records')
@@ -120,6 +177,7 @@ tog.sort_values(by=['Date'], ascending=False, inplace=True)
 
 tog['Date'] = tog['Date'].dt.strftime("%Y-%m-%d %H:%M")
 
+tog = tog.loc[tog['Category'] != 'Bsky']
 tog = tog[:10]
 
 with open(f'{out_path}/latest.json', 'w') as f:
@@ -127,5 +185,5 @@ with open(f'{out_path}/latest.json', 'w') as f:
 
 
 
-# print(tog)
+print(tog)
 # %%
