@@ -185,5 +185,5 @@ with open(f'{out_path}/latest.json', 'w') as f:
 
 
 
-print(tog)
+# print(tog)
 # %%
