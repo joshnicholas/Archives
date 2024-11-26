@@ -52,84 +52,84 @@ for i in range(0,9):
     feed = next.feed
 
     for thingo in feed:
-        handle = thingo.post.author.handle
-        uri = thingo.post.uri
-
-        old = pd.read_csv(f"{outty}/Pics.csv")
-        already_done = old['Uri'].unique().tolist()
-
-        if uri not in already_done:
-            if handle.lower() == user:
-                if hasattr(thingo.post.record, 'embed'):
-                # if thingo.post.record.embed != None:
-                    if hasattr(thingo.post.record.embed, 'images'):
-                    # if thingo.post.record.embed.images != None:
-                        # uri = thingo.post.uri
-
-                        checked += 1
-                        if checked % 50 == 0:
-                            print(f"Checked: ", checked)
-                        time.sleep(1)
-
-                        created = datetime.datetime.fromisoformat(thingo.post.record.created_at)
-                        difference = today - created
-
-                        text = thingo.post.record.text
-                        # print(thingo.post.record.embed)
-
-                        # print(thingo.post.record)
-                        record = {"Handle": handle, "Posted": created.strftime("%Y-%m-%d"), "Text": text,
-                                "Deleted": False, "Uri": uri}
-                        
-                        imagery = ''
-                        for image in thingo.post.record.embed.images:
-                            stemmo = image.image.ref.link
-                            imagery += f"{stemmo}.jpg"
-
-                            picco = f'https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:3kqj3ksyfct7pip5j5dnmjcu/{stemmo}@jpeg'
-
-                            r = requests.get(picco, stream=True)
-
-                            if r.status_code == 200:
-                                with open(f'{outty}/images/{stemmo}.jpg', 'wb') as f:
-                                    for chunk in r:
-                                        f.write(chunk)
-                            
-                        record['Images'] = imagery
-                        records.append(record)
-
-                        cat = pd.DataFrame.from_records(records)
-                        old = pd.read_csv(f"{outty}/Pics.csv")
-
-                        tog = pd.concat([cat, old])
-                        tog.drop_duplicates(subset=['Uri'], inplace=True)
-                        dumper(outty, 'Pics', tog)
-
-        created = datetime.datetime.fromisoformat(thingo.post.record.created_at)
-        difference = today - created
-
-        if handle.lower() == user:
+        try:
+            handle = thingo.post.author.handle
             uri = thingo.post.uri
-            if (difference.days > 90):
-                client.delete_post(uri)
-                # record['Deleted'] = True
-                deleted += 1
-                print("Deleted: ", deleted)
-        else:
-            uri = thingo.post.viewer.repost
-            if (difference.days > 90):
-                client.delete_repost(uri)
-                # record['Deleted'] = True
-                deleted += 1
-                print("Deleted: ", deleted)
 
-    # %%
+            old = pd.read_csv(f"{outty}/Pics.csv")
+            already_done = old['Uri'].unique().tolist()
+
+            if uri not in already_done:
+                if handle.lower() == user:
+                    if hasattr(thingo.post.record, 'embed'):
+                    # if thingo.post.record.embed != None:
+                        if hasattr(thingo.post.record.embed, 'images'):
+                        # if thingo.post.record.embed.images != None:
+                            # uri = thingo.post.uri
+
+                            checked += 1
+                            if checked % 50 == 0:
+                                print(f"Checked: ", checked)
+                            time.sleep(1)
+
+                            created = datetime.datetime.fromisoformat(thingo.post.record.created_at)
+                            difference = today - created
+
+                            text = thingo.post.record.text
+                            # print(thingo.post.record.embed)
+
+                            # print(thingo.post.record)
+                            record = {"Handle": handle, "Posted": created.strftime("%Y-%m-%d"), "Text": text,
+                                    "Deleted": False, "Uri": uri}
+                            
+                            imagery = ''
+                            for image in thingo.post.record.embed.images:
+
+                                stemmo = image.image.ref.link
+                                imagery += f"{stemmo}.jpg"
+
+                                picco = f'https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:3kqj3ksyfct7pip5j5dnmjcu/{stemmo}@jpeg'
+
+                                r = requests.get(picco, stream=True)
+
+                                if r.status_code == 200:
+                                    with open(f'{outty}/images/{stemmo}.jpg', 'wb') as f:
+                                        for chunk in r:
+                                            f.write(chunk)
+                                
+                            record['Images'] = imagery
+                            records.append(record)
+
+                            cat = pd.DataFrame.from_records(records)
+                            old = pd.read_csv(f"{outty}/Pics.csv")
+
+                            tog = pd.concat([cat, old])
+                            tog.drop_duplicates(subset=['Uri'], inplace=True)
+                            dumper(outty, 'Pics', tog)
+
+            created = datetime.datetime.fromisoformat(thingo.post.record.created_at)
+            difference = today - created
+
+            if handle.lower() == user:
+                uri = thingo.post.uri
+                if (difference.days > 30):
+                    client.delete_post(uri)
+                    # record['Deleted'] = True
+                    deleted += 1
+                    print("Deleted: ", deleted)
+            else:
+                uri = thingo.post.viewer.repost
+                if (difference.days > 30):
+                    client.delete_repost(uri)
+                    # record['Deleted'] = True
+                    deleted += 1
+                    print("Deleted: ", deleted)
+        except Exception as e:
+            print(e)
+            print(thingo.post.record.embed.images)
+            continue
 
 
 
 
-
-    # print(type(thingo.post.record.embed))
-    # %%
-
-    # https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:3kqj3ksyfct7pip5j5dnmjcu/bafkreidom5jvw4ypacxefa2aewm6y5p6bslim76cvylm7cd554lxt6whta@jpeg
+# https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:3kqj3ksyfct7pip5j5dnmjcu/bafkreihnhin3ktxu7qmy7cskxtoc7te6pkp3v47sybg75kz7ses46anxqm@jpeg
