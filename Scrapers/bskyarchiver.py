@@ -57,6 +57,7 @@ for i in range(0,9):
             uri = thingo.post.uri
 
             old = pd.read_csv(f"{outty}/Pics.csv")
+            # old = old.loc[old['Deleted'] == True] 
             already_done = old['Uri'].unique().tolist()
 
             if uri not in already_done:
@@ -84,9 +85,15 @@ for i in range(0,9):
                             
                             imagery = ''
                             for image in thingo.post.record.embed.images:
+                                print(image.image)
 
-                                stemmo = image.image.ref.link
+                                # if hasattr(image.image, 'ref'):
+                                #     stemmo = image.image.ref.link
+                                # else:
+                                stemmo = image.image.cid
                                 imagery += f"{stemmo}.jpg"
+                                # stemmo = image.image.ref.link
+                                # imagery += f"{stemmo}.jpg"
 
                                 picco = f'https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:3kqj3ksyfct7pip5j5dnmjcu/{stemmo}@jpeg'
 
