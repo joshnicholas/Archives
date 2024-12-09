@@ -71,10 +71,12 @@ def micro_process(urlo, cat):
 urlo = 'https://bsky.app/profile/joshnicholas.com/rss'
 reese = feedparser.parse(urlo)
 
+
 records = []
 
 
 for entry in reese['entries']:
+    print(entry)
     # dict_keys(['links', 'link', 'summary', 'summary_detail', 
     # 'published', 'published_parsed', 'id', 
     # 'guidislink'])
@@ -105,9 +107,9 @@ for entry in reese['entries']:
     records.append(record)
 
 sky = pd.DataFrame.from_records(records)
-sky = sky.loc[sky['Category'].isin(['Scribble', 'linklog'])]
+# sky = sky.loc[sky['Category'].isin(['Scribble', 'linklog'])]
 
-# print(sky)
+print(sky)
 # return pd.DataFrame.from_records(records)
 
 # %%
