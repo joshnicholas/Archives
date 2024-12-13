@@ -473,5 +473,5 @@ def send_to_git(stemmo, repo, what, frame):
     latters = repository.get_contents(latest)
     repository.update_file(latest, f"updated_scraped_file_{stemmo}", content, latters.sha)
 
-send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
+# send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
 # %%
