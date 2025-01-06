@@ -85,7 +85,7 @@ for i in range(0,9):
                             
                             imagery = ''
                             for image in thingo.post.record.embed.images:
-                                print(image.image)
+                                # print(image.image)
 
                                 # if hasattr(image.image, 'ref'):
                                 #     stemmo = image.image.ref.link
