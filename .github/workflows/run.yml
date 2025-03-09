@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out this repo
-        uses: actions/checkout@v2                                                               
+        uses: actions/checkout@v4                                                               
       - name: Set up Python 3.12                               
         uses: actions/setup-python@master                               
         with:                                 
           python-version: '3.12'
           cache: 'pip'
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         name: Configure pip caching
         with:
           path: ~/.cache/pip
@@ -29,7 +29,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Cache Playwright browsers
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright/
           key: ${{ runner.os }}-browsers
