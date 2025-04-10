@@ -415,10 +415,10 @@ try:
 except Exception as e:
     print(e)
 
-cat = pd.concat(listo)
+# cat = pd.concat(listo)
 
-with open(f'combined/top_stories.json', 'w') as f:
-    cat.to_json(f, orient='records')
+# with open(f'combined/top_stories.json', 'w') as f:
+#     cat.to_json(f, orient='records')
 
 
 
