@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 import datetime 
 import pytz
 import requests
-from pytrends.request import TrendReq
+# from pytrends.request import TrendReq
 from gnews import GNews
 import json 
 
@@ -406,14 +406,14 @@ def get_goog_trends(out_path):
     return frame
 rand_delay(5)
 
-print("Get Aus google trends")
+# print("Get Aus google trends")
 
-try:
-    goog_trendo = get_goog_trends("Archive/google")
-    # listo.append(goog_trendo)
-    dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
-except Exception as e:
-    print(e)
+# try:
+#     goog_trendo = get_goog_trends("Archive/google")
+#     # listo.append(goog_trendo)
+#     dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
 
 # cat = pd.concat(listo)
 
