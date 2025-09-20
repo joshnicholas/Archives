@@ -17,7 +17,7 @@ import pathlib
 pathos = pathlib.Path(__file__).parent.parent
 os.chdir(pathos)
 
-print(os.getcwd())
+# print(os.getcwd())
 
 import nltk
 nltk.download('wordnet')
@@ -406,14 +406,14 @@ def get_goog_trends(out_path):
     return frame
 rand_delay(5)
 
-print("Get Aus google trends")
+# print("Get Aus google trends")
 
-try:
-    goog_trendo = get_goog_trends("Archive/google")
-    # listo.append(goog_trendo)
-    dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
-except Exception as e:
-    print(e)
+# try:
+#     goog_trendo = get_goog_trends("Archive/google")
+#     # listo.append(goog_trendo)
+#     dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
 
 # cat = pd.concat(listo)
 
@@ -430,7 +430,7 @@ with open("Combined/top_stories.json", "w") as f:
 
 from dotenv import load_dotenv
 load_dotenv()
-from github import Github, UnknownObjectException
+from github import Github, UnknownObjectException, Auth
 
 # %%
 
@@ -456,7 +456,7 @@ def send_to_git(stemmo, repo, what, frame):
     tokeny = os.environ['gitty']
     latest = f'static/{what}.csv'
 
-    github = Github(tokeny)
+    github = Github(auth=Auth.Token(tokeny))
 
     repository = github.get_user().get_repo(repo)
 
@@ -473,5 +473,5 @@ def send_to_git(stemmo, repo, what, frame):
     latters = repository.get_contents(latest)
     repository.update_file(latest, f"updated_scraped_file_{stemmo}", content, latters.sha)
 
-send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
+# send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
 # %%
