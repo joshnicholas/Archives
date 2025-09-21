@@ -76,40 +76,44 @@ records = []
 
 
 for entry in reese['entries']:
-    print(entry)
-    # dict_keys(['links', 'link', 'summary', 'summary_detail', 
-    # 'published', 'published_parsed', 'id', 
-    # 'guidislink'])
+    try:
+        # print(entry)
+        # dict_keys(['links', 'link', 'summary', 'summary_detail', 
+        # 'published', 'published_parsed', 'id', 
+        # 'guidislink'])
 
-    datto = time.strftime("%Y-%m-%d %H:%M", entry['published_parsed'])
+        datto = time.strftime("%Y-%m-%d %H:%M", entry['published_parsed'])
 
-    catto = ''
-    entro = entry['summary']
-    if "#scribble" in entro:
-        catto = 'Scribble'
-    elif "#linklog" in entro: 
-        catto = 'linklog'
-    else:
-        catto = 'Bsky'
+        catto = ''
+        entro = entry['summary']
+        if "#scribble" in entro:
+            catto = 'Scribble'
+        elif "#linklog" in entro: 
+            catto = 'linklog'
+        else:
+            catto = 'Bsky'
 
-    print(entry.keys())
-    record = {
-        "Url": entry['link'],
-        "Id": entry['id'], 
-        "Source": "Bsky",
-        "Headline": entry['summary'],
-        "Date": datto,
-        "Category": catto
+        print(entry.keys())
+        record = {
+            "Url": entry['link'],
+            "Id": entry['id'], 
+            "Source": "Bsky",
+            "Headline": entry['summary'],
+            "Date": datto,
+            "Category": catto
 
-    }
-    print(record)
+        }
+        print(record)
 
-    records.append(record)
+        records.append(record)
+    except Exception as e:
+        print(e)
+        continue
 
 sky = pd.DataFrame.from_records(records)
 # sky = sky.loc[sky['Category'].isin(['Scribble', 'linklog'])]
 
-print(sky)
+# print(sky)
 # return pd.DataFrame.from_records(records)
 
 # %%
