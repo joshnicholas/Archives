@@ -20,7 +20,10 @@ os.chdir(pathos)
 # print(os.getcwd())
 
 import nltk
-nltk.download('wordnet')
+try:
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    nltk.download('wordnet')
 
 today = datetime.datetime.now()
 scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))

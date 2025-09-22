@@ -1,38 +1,48 @@
 name: Scraper
 
-env: 
+env:
   gitty : ${{ secrets.GITTY }}
 on:
   workflow_dispatch:
   schedule:
     - cron: "02 * * * *"
+
+concurrency:
+  group: scraper-workflow
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Check out this repo
-        uses: actions/checkout@v4                                                               
-      - name: Set up Python 3.12                               
-        uses: actions/setup-python@master                               
-        with:                                 
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
           python-version: '3.12'
           cache: 'pip'
 
-      - uses: actions/cache@v4
-        name: Configure pip caching
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright/
-          key: ${{ runner.os }}-browsers
+          key: ${{ runner.os }}-browsers-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-browsers-
+
+      - name: Cache NLTK data
+        uses: actions/cache@v4
+        with:
+          path: ~/nltk_data
+          key: ${{ runner.os }}-nltk-data
+          restore-keys: |
+            ${{ runner.os }}-nltk-
   
       - name: Install dependencies
         run: |
@@ -44,9 +54,14 @@ jobs:
         
       - name: 🚀 Commit and push if it changed
         run: |
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git add -A
-          timestamp=$(date -u)
-          git commit -m "Latest data: ${timestamp}" || exit 0
-          git push
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            timestamp=$(date -u)
+            git commit -m "Latest data: ${timestamp}"
+            git push
+          else
+            echo "No changes to commit"
+          fi
