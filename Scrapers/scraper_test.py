@@ -161,18 +161,41 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 
 dicto = {}
 
-print("Scraping the ABC")
+# print("Scraping the ABC")
+# try:
+#     abc = shot_grabber('https://www.abc.net.au/news/justin', 'ABC', 'Archive/abc_top',
+#     """
+#         var contexto = document.querySelector('[data-uri="coremedia://collection/10719986"]')
+#         Array.from(contexto.querySelectorAll('a'), el => {
+#         let Headline = el.innerText;
+#         let Url = el['href']
+#         return {Headline, Url};
+#         })""",
+#         '[data-uri="coremedia://collection/10719986"]')
+#     # listo.append(abc)
+#     dicto['abc'] = abc.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
+
+print("Scraping the BBC")
 try:
-    abc = shot_grabber('https://www.abc.net.au/news/justin', 'ABC', 'Archive/abc_top',
+    bbc = shot_grabber('https://www.bbc.com/news', 'bbc', 'Archive/bbc_top',
     """
-        var contexto = document.querySelector('[data-uri="coremedia://collection/10719986"]')
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })""",
-        '[data-uri="coremedia://collection/10719986"]')
-    # listo.append(abc)
-    dicto['abc'] = abc.to_dict(orient='records')
+var contexto = document.querySelector('[data-testid="illinois-grid-10"]');
+
+Array.from(
+  contexto.querySelectorAll('[data-testid="cambridge-card"] a'),
+  el => {
+    let Headline = el.querySelector('[data-testid="card-headline"]')?.innerText.trim();
+    let Url = el.getAttribute('href');
+    return { Headline, Url };
+  }
+);
+""",
+        '[data-testid="illinois-grid-10"]')
+
+    dicto['bbc'] = bbc.to_dict(orient='records')
 except Exception as e:
     print(e)

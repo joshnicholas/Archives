@@ -280,6 +280,31 @@ try:
 except Exception as e:
     print(e)
 
+
+
+print("Scraping the BBC")
+try:
+    bbc = shot_grabber('https://www.bbc.com/news', 'bbc', 'Archive/bbc_top',
+    """
+var contexto = document.querySelector('[data-testid="illinois-grid-10"]');
+
+Array.from(
+  contexto.querySelectorAll('[data-testid="cambridge-card"] a'),
+  el => {
+    let Headline = el.querySelector('[data-testid="card-headline"]')?.innerText.trim();
+    let Url = el.getAttribute('href');
+    return { Headline, Url };
+  }
+);
+""",
+        '[data-testid="illinois-grid-10"]')
+
+    dicto['bbc'] = bbc.to_dict(orient='records')
+except Exception as e:
+    print(e)
+
+
+
 # %%
 
 def get_google(out_path):
