@@ -11,6 +11,11 @@ from pytrends.request import TrendReq
 from gnews import GNews
 import json 
 
+import os
+
+# from dotenv import load_dotenv
+# load_dotenv()
+
 
 import os 
 import pathlib
@@ -450,8 +455,6 @@ rand_delay(5)
 
 
 
-with open("Combined/top_stories.json", "w") as f: 
-    json.dump(dicto, f)
 
 
 # %%
@@ -463,17 +466,7 @@ from github import Github, UnknownObjectException, Auth
 # %%
 
 
-listo = []
 
-keys = list(dicto.keys())
-exclude = ['goog_trends', 'wiki']
-keys = [x for x in keys if x not in exclude]
-
-for keyo in keys:
-    inter = pd.DataFrame.from_records(dicto[keyo])
-    listo.append(inter)
-
-out_data = pd.concat(listo)
 
 # %%
 
@@ -503,3 +496,68 @@ def send_to_git(stemmo, repo, what, frame):
 
 # send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
 # %%
+
+
+
+
+
+
+def get_trending_topics(out_path):
+
+    url = "https://public.api.bsky.app/xrpc/app.bsky.unspecced.getTrendingTopics"
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    data = response.json()
+
+    topics = []
+    for topic in data.get('topics', []):
+        topics.append({
+            'Topic': topic.get('topic', ''),
+            'Url': topic.get('link', '')
+        })
+
+    df = pd.DataFrame(topics)
+    df.insert(0, 'Rank', range(1, len(df) + 1))
+    df['publication'] = 'Bsky'
+    df['scraped_datetime'] = format_scrape_time 
+
+    df = create_search("Topic", df)
+
+    df = df[['publication', 'scraped_datetime', 'Topic', 'Url', 'Rank', 'Search_var']]
+
+    with open(f'{out_path}/latest.json', 'w') as f:
+        df.to_json(f, orient='records')
+
+    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+        df.to_json(f, orient='records')
+
+    # print("Lenno: ", len(df))
+
+    return df
+
+
+try:
+    print("Get Bluesky")
+    bsky = get_trending_topics('Archive/bsky')
+    dicto['bsky'] = bsky.to_dict(orient='records')
+    # listo.append(goog)
+except Exception as e:
+    print(e)
+
+
+with open("Combined/top_stories.json", "w") as f: 
+    json.dump(dicto, f)
+
+listo = []
+
+keys = list(dicto.keys())
+exclude = ['goog_trends', 'wiki']
+keys = [x for x in keys if x not in exclude]
+
+for keyo in keys:
+    inter = pd.DataFrame.from_records(dicto[keyo])
+    listo.append(inter)
+
+out_data = pd.concat(listo)
