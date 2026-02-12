@@ -7,3 +7,4 @@ requests
 pytrends
 python-dotenv
 pygithub
+feedparser

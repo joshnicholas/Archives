@@ -3,7 +3,7 @@ import pandas as pd
 
 from playwright.sync_api import sync_playwright
 # from playwright_stealth import stealth_sync
-
+import feedparser
 import datetime 
 import pytz
 import requests
@@ -545,6 +545,49 @@ try:
     # listo.append(goog)
 except Exception as e:
     print(e)
+
+
+
+##########
+
+
+def get_google_trends_rss(urlo, out_path):
+
+    feedo = feedparser.parse(urlo)
+
+    records = []
+
+    for entry in feedo['entries']:
+        record = {"Headline": entry['title'], 
+        'publication': "Google trends",
+        'published': entry['published'],
+
+        'scraped_datetime':format_scrape_time,
+        "Traffic":entry['ht_approx_traffic'], 
+        'Entry': entry['ht_news_item_title'], 
+        "Url": entry['ht_news_item_url']}
+
+        records.append(record)
+
+    frame = pd.DataFrame.from_records(records)
+
+    with open(f'{out_path}/latest.json', 'w') as f:
+        frame.to_json(f, orient='records')
+
+    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+        frame.to_json(f, orient='records')
+
+    return frame 
+
+try:
+    print("Google trends")
+    trendos = get_google_trends_rss('https://trends.google.com/trending/rss?geo=AU', 'Archive/google_trends_rss')
+    dicto['google_trends'] = trendos.to_dict(orient='records')
+except Exception as e:
+    print(e)
+
+#####
+
 
 
 with open("Combined/top_stories.json", "w") as f: 
