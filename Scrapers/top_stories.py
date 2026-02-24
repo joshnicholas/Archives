@@ -648,15 +648,23 @@ except Exception as e:
 
 #####
 
+from wiki_edits import get_wiki_edits
+
+try:
+    print("Getting Wikipedia most-edited articles")
+    wiki_edits = get_wiki_edits("Archive/wiki_edits")
+    dicto['wiki_edits'] = wiki_edits.to_dict(orient='records')
+except Exception as e:
+    print(e)
 
 
-with open("Combined/top_stories.json", "w") as f: 
+with open("Combined/top_stories.json", "w") as f:
     json.dump(dicto, f)
 
 listo = []
 
 keys = list(dicto.keys())
-exclude = ['goog_trends', 'wiki']
+exclude = ['goog_trends', 'wiki', 'wiki_edits']
 keys = [x for x in keys if x not in exclude]
 
 for keyo in keys:
