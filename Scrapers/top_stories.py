@@ -649,6 +649,8 @@ except Exception as e:
 #####
 
 from wiki_edits import get_wiki_edits
+from extract_entities import records_from_dicto, extract_entities
+import spacy
 
 try:
     print("Getting Wikipedia most-edited articles")
@@ -721,3 +723,27 @@ def combiner(stemmo, data_dir,days=7):
         df.to_json(f)
 
 combiner("graun", 'Archive/graun_top/daily_dumps', days=1)
+
+try:
+    print("Extracting named entities")
+    entity_sources = ["smh", "abc", "news", "graun", "age", "bris", "bbc", "goog_news"]
+    nlp = spacy.load("en_core_web_sm")
+    records = records_from_dicto(dicto, entity_sources)
+    entities = extract_entities(records, nlp)
+    entity_output = {
+        "scraped_datetime": format_scrape_time,
+        "sources": entity_sources,
+        "headline_count": len(records),
+        "entities": [
+            {"name": name, "type": info["type"], "count": info["count"], "mentions": info["mentions"]}
+            for name, info in entities.items()
+        ],
+    }
+    with open("Archive/entities/latest.json", "w") as f:
+        json.dump(entity_output, f)
+    with open(f"Archive/entities/dumps/{format_scrape_time}.json", "w") as f:
+        json.dump(entity_output, f)
+    with open("Combined/entities.json", "w") as f:
+        json.dump(entity_output, f)
+except Exception as e:
+    print(e)

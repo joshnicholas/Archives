@@ -43,11 +43,12 @@ jobs:
           key: ${{ runner.os }}-nltk-data
           restore-keys: |
             ${{ runner.os }}-nltk-
-  
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           playwright install firefox
+          python -m spacy download en_core_web_sm
 
       - name: 🍳 Scrape top stories
         run: python3 Scrapers/top_stories.py

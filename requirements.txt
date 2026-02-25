@@ -8,3 +8,4 @@ pytrends
 python-dotenv
 pygithub
 feedparser
+spacy
