@@ -20,7 +20,10 @@ os.chdir(pathos)
 print(os.getcwd())
 
 import nltk
-nltk.download('wordnet')
+try:
+    nltk.data.find("corpora/wordnet")
+except LookupError:
+    nltk.download("wordnet")
 
 def rand_delay(num):
   import random 
@@ -117,7 +120,8 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 
             # stealth_sync(page)
 
-            page.goto(urlo)
+            page.goto(urlo, wait_until="domcontentloaded",
+                    timeout=60_000)
 
             # print('Before waiting')
             waiting_around = page.locator(awaito)
@@ -161,17 +165,34 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 
 
 
-try:
-    news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
-        """
-        var contexto = document.querySelector('.most-popular-content')
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })""",
-        '.most-popular-content')
-    # listo.append(news)\
-    dicto['news'] = news.to_dict(orient='records')
-except Exception as e:
-    print(e)
+# try:
+#     news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
+#         """
+#         var contexto = document.querySelector('.most-popular-content')
+#         Array.from(contexto.querySelectorAll('a'), el => {
+#         let Headline = el.innerText;
+#         let Url = el['href']
+#         return {Headline, Url};
+#         })""",
+#         '.most-popular-content')
+#     # listo.append(news)\
+#     dicto['news'] = news.to_dict(orient='records')
+
+#     print(dicto['news'])
+# except Exception as e:
+#     print(e)
+
+
+
+import inspect
+from gnews import GNews
+
+print(inspect.signature(GNews))
+
+google_news = GNews(
+    language="en",
+    country="AU",
+    period="2h",
+    max_results=100,
+    timeout=30,
+)

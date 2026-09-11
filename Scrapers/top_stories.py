@@ -25,6 +25,7 @@ os.chdir(pathos)
 # print(os.getcwd())
 
 import nltk
+# nltk.download('wordnet')
 try:
     nltk.data.find('corpora/wordnet')
 except LookupError:
@@ -163,6 +164,62 @@ def bbc_shot_grabber(urlo, publication, out_path, javascript_code, awaito):
                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
 
 
+# def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
+#     tries = 0
+#     with sync_playwright() as p:
+#         try:
+
+#             browser = p.firefox.launch()
+#             # browser = p.chromium.launch()
+
+#             context = browser.new_context()
+
+#             page = context.new_page()
+
+#             # stealth_sync(page)
+
+#             page.goto(urlo)
+
+#             # print('Before waiting')
+#             waiting_around = page.locator(awaito)
+#             waiting_around.wait_for()
+#             # print("After waiting")
+
+#             resulto = page.evaluate(javascript_code)
+
+#             browser.close()
+
+#             frame = pd.DataFrame.from_records(resulto)
+
+#             frame['publication'] = publication
+
+#             frame = create_search("Headline", frame)
+
+#             frame['Rank'] = frame.index + 1
+
+#             frame['scraped_datetime']= format_scrape_time 
+
+#             frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
+
+#             with open(f'{out_path}/latest.json', 'w') as f:
+#                 frame.to_json(f, orient='records')
+
+#             with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#                 frame.to_json(f, orient='records')
+
+#             # print("Lenno: ", len(frame))
+#             return frame 
+
+#         except Exception as e:
+#             tries += 1
+#             print("Tries: ", tries)
+#             browser.close()
+#             print(e)
+#             rand_delay(5)
+#             if e == 'Timeout 30000ms exceeded.' and tries <= 3:
+#                 print("Trying again")
+#                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
+
 def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
     tries = 0
     with sync_playwright() as p:
@@ -177,7 +234,8 @@ def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 
             # stealth_sync(page)
 
-            page.goto(urlo)
+            page.goto(urlo, wait_until="domcontentloaded",
+                    timeout=60_000)
 
             # print('Before waiting')
             waiting_around = page.locator(awaito)
