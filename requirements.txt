@@ -6,7 +6,5 @@ playwright
 GNews
 requests
 pytrends
-python-dotenv
-pygithub
 feedparser
 spacy

@@ -5,7 +5,11 @@ env:
 on:
   workflow_dispatch:
   schedule:
-    - cron: "02 * * * *"
+    # Brisbane has no daylight saving (always UTC+10), so 4am-10pm Brisbane is a fixed UTC
+    # window: UTC hours 18-23 and 0-12 (i.e. every hour except 13-17, which is the Brisbane
+    # 11pm-3am overnight gap). Triggers on the hour; the job itself adds up to 15 minutes of
+    # jitter before scraping, so the scrape doesn't literally land on :00 every time.
+    - cron: "0 0-12,18-23 * * *"
 
 concurrency:
   group: scraper-workflow
@@ -17,7 +21,7 @@ permissions:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45  # up to 15 of these can be pure jitter sleep before any scraping starts
     steps:
       - name: Check out this repo
         uses: actions/checkout@v4
@@ -50,8 +54,15 @@ jobs:
           playwright install firefox
           python -m spacy download en_core_web_sm
 
+      - name: Jitter within the first 15 minutes of the hour
+        if: github.event_name == 'schedule'
+        run: |
+          delay=$(( RANDOM % 900 ))
+          echo "Sleeping ${delay}s before scraping"
+          sleep "${delay}"
+
       - name: 🍳 Scrape top stories
-        run: python3 Scrapers/top_stories.py
+        run: python3 Scrapers/new_top_stories.py
         
       - name: 🚀 Commit and push if it changed
         run: |

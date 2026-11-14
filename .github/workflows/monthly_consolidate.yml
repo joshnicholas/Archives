@@ -1,0 +1,48 @@
+name: Monthly Parquet consolidation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 1 * *" # the 1st of every month, 03:00 UTC
+
+concurrency:
+  group: monthly-consolidate-workflow
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Consolidate daily dumps into yearly parquet files
+        run: python3 scripts/monthly_consolidate.py
+
+      - name: 🚀 Commit and push if it changed
+        run: |
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            timestamp=$(date -u)
+            git commit -m "Monthly Parquet consolidation: ${timestamp}"
+            git pull --rebase
+            git push
+          else
+            echo "No changes to commit"
+          fi

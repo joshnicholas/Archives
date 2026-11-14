@@ -40,9 +40,10 @@ def get_wiki_edits(out_path):
 
     return df
 
-print("Scraping Wikipedia most-edited articles")
-try:
-    wiki_edits = get_wiki_edits("Archive/wiki_edits")
-    print(f"Got {len(wiki_edits)} articles")
-except Exception as e:
-    print(e)
+if __name__ == "__main__":
+    print("Scraping Wikipedia most-edited articles")
+    try:
+        wiki_edits = get_wiki_edits("Archive/wiki_edits")
+        print(f"Got {len(wiki_edits)} articles")
+    except Exception as e:
+        print(e)
