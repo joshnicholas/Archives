@@ -1,168 +1,223 @@
-# %%
-import pandas as pd 
+# # %%
+# import pandas as pd 
 
-from playwright.sync_api import sync_playwright
-# from playwright_stealth import stealth_sync
-import feedparser
-import datetime 
-import pytz
-import requests
-from pytrends.request import TrendReq
-from gnews import GNews
-import json 
+# from playwright.sync_api import sync_playwright
+# # from playwright_stealth import stealth_sync
+# import feedparser
+# import datetime 
+# import pytz
+# import requests
+# from pytrends.request import TrendReq
+# from gnews import GNews
+# import json 
 
-import os
+# import os
 
-# from dotenv import load_dotenv
-# load_dotenv()
-
-
-import os 
-import pathlib
-pathos = pathlib.Path(__file__).parent.parent
-os.chdir(pathos)
-
-# print(os.getcwd())
-
-import nltk
-# nltk.download('wordnet')
-try:
-    nltk.data.find('corpora/wordnet')
-except LookupError:
-    nltk.download('wordnet')
-
-today = datetime.datetime.now()
-scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))
-format_scrape_time = datetime.datetime.strftime(scrape_time, "%Y_%m_%d_%H")
-
-pub_scrape_time = datetime.datetime.strftime(scrape_time, "%-I:%M%p %d/%m")
-
-# %%
-
-def rand_delay(num):
-  import random 
-  import time 
-  rando = random.random() * num
-#   print(rando)
-  time.sleep(rando)
+# # from dotenv import load_dotenv
+# # load_dotenv()
 
 
-def create_search(what, frame):
+# import pathlib
+# pathos = pathlib.Path(__file__).parent.parent
+# os.chdir(pathos)
 
-    from nltk.stem import WordNetLemmatizer
-    import re 
+# # print(os.getcwd())
 
-    def do_it(texto):
+# import nltk
+# # nltk.download('wordnet')
+# try:
+#     nltk.data.find('corpora/wordnet')
+# except LookupError:
+#     nltk.download('wordnet')
 
-        wnl = WordNetLemmatizer() 
+# today = datetime.datetime.now()
+# scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))
+# format_scrape_time = datetime.datetime.strftime(scrape_time, "%Y_%m_%d_%H")
 
-        senno = ''
+# pub_scrape_time = datetime.datetime.strftime(scrape_time, "%-I:%M%p %d/%m")
 
-        inside_texto = re.sub(r'[^A-Za-z0-9 ]+', '', texto)
-        for word in inside_texto.split(" "):
-            senno += f"{word.lower()} "
+# # %%
 
-            stemmed = wnl.lemmatize(word)
-
-            if stemmed.lower() not in senno:
-                senno += f"{stemmed} "
-
-        return senno
-
-    copier = frame.copy()
-    copier.fillna('', inplace=True)
-    copier['Search_var'] = copier[what].map(lambda x: do_it(x))
-
-    return copier
-
-
-# def shot_grabber(urlo, publication, out_path, javascript_code):
-
-#     result = subprocess.check_output(['shot-scraper', 'javascript', urlo, javascript_code, "--user-agent", "Firefox", '--bypass-csp'])
-
-#     resulto = ast.literal_eval(result.decode("utf-8"))
-
-#     frame = pd.DataFrame.from_records(resulto)
-
-#     frame['publication'] = publication
-
-#     frame = create_search("Headline", frame)
-
-#     frame['Rank'] = frame.index + 1
-
-#     frame['scraped_datetime']= format_scrape_time 
-
-#     frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
-#     # print(frame)
-#     # print(frame.columns.tolist())
-
-#     with open(f'{out_path}/latest.json', 'w') as f:
-#         frame.to_json(f, orient='records')
-
-#     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-#         frame.to_json(f, orient='records')
-
-#     return frame 
+# def rand_delay(num):
+#   import random 
+#   import time 
+#   rando = random.random() * num
+# #   print(rando)
+#   time.sleep(rando)
 
 
-def bbc_shot_grabber(urlo, publication, out_path, javascript_code, awaito):
-    tries = 0
-    with sync_playwright() as p:
-        try:
+# def create_search(what, frame):
 
-            browser = p.firefox.launch()
-            # browser = p.chromium.launch()
+#     from nltk.stem import WordNetLemmatizer
+#     import re 
 
-            context = browser.new_context()
+#     def do_it(texto):
 
-            page = context.new_page()
+#         wnl = WordNetLemmatizer() 
 
-            # stealth_sync(page)
+#         senno = ''
 
-            page.goto(urlo)
+#         inside_texto = re.sub(r'[^A-Za-z0-9 ]+', '', texto)
+#         for word in inside_texto.split(" "):
+#             senno += f"{word.lower()} "
 
-            # print('Before waiting')
-            waiting_around = page.locator(awaito)
-            waiting_around.wait_for()
-            # print("After waiting")
+#             stemmed = wnl.lemmatize(word)
 
-            resulto = page.evaluate(javascript_code)
+#             if stemmed.lower() not in senno:
+#                 senno += f"{stemmed} "
 
-            browser.close()
+#         return senno
 
-            frame = pd.DataFrame.from_records(resulto)
+#     copier = frame.copy()
+#     copier.fillna('', inplace=True)
+#     copier['Search_var'] = copier[what].map(lambda x: do_it(x))
 
-            frame['publication'] = publication
+#     return copier
 
-            frame = create_search("Headline", frame)
 
-            frame['Rank'] = frame.index + 1
+# # def shot_grabber(urlo, publication, out_path, javascript_code):
 
-            frame['scraped_datetime']= format_scrape_time 
+# #     result = subprocess.check_output(['shot-scraper', 'javascript', urlo, javascript_code, "--user-agent", "Firefox", '--bypass-csp'])
 
-            frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
+# #     resulto = ast.literal_eval(result.decode("utf-8"))
 
-            frame['Url'] = "https://www.bbc.com" + frame['Url']
+# #     frame = pd.DataFrame.from_records(resulto)
 
-            with open(f'{out_path}/latest.json', 'w') as f:
-                frame.to_json(f, orient='records')
+# #     frame['publication'] = publication
 
-            with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-                frame.to_json(f, orient='records')
+# #     frame = create_search("Headline", frame)
 
-            # print("Lenno: ", len(frame))
-            return frame 
+# #     frame['Rank'] = frame.index + 1
 
-        except Exception as e:
-            tries += 1
-            print("Tries: ", tries)
-            browser.close()
-            print(e)
-            rand_delay(5)
-            if e == 'Timeout 30000ms exceeded.' and tries <= 3:
-                print("Trying again")
-                shot_grabber(urlo, publication, out_path, javascript_code, awaito)
+# #     frame['scraped_datetime']= format_scrape_time 
 
+# #     frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
+# #     # print(frame)
+# #     # print(frame.columns.tolist())
+
+# #     with open(f'{out_path}/latest.json', 'w') as f:
+# #         frame.to_json(f, orient='records')
+
+# #     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+# #         frame.to_json(f, orient='records')
+
+# #     return frame 
+
+
+# def bbc_shot_grabber(urlo, publication, out_path, javascript_code, awaito):
+#     tries = 0
+#     with sync_playwright() as p:
+#         try:
+
+#             browser = p.firefox.launch()
+#             # browser = p.chromium.launch()
+
+#             context = browser.new_context()
+
+#             page = context.new_page()
+
+#             # stealth_sync(page)
+
+#             page.goto(urlo)
+
+#             # print('Before waiting')
+#             waiting_around = page.locator(awaito)
+#             waiting_around.wait_for()
+#             # print("After waiting")
+
+#             resulto = page.evaluate(javascript_code)
+
+#             browser.close()
+
+#             frame = pd.DataFrame.from_records(resulto)
+
+#             frame['publication'] = publication
+
+#             frame = create_search("Headline", frame)
+
+#             frame['Rank'] = frame.index + 1
+
+#             frame['scraped_datetime']= format_scrape_time 
+
+#             frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
+
+#             frame['Url'] = "https://www.bbc.com" + frame['Url']
+
+#             with open(f'{out_path}/latest.json', 'w') as f:
+#                 frame.to_json(f, orient='records')
+
+#             with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#                 frame.to_json(f, orient='records')
+
+#             # print("Lenno: ", len(frame))
+#             return frame 
+
+#         except Exception as e:
+#             tries += 1
+#             print("Tries: ", tries)
+#             browser.close()
+#             print(e)
+#             rand_delay(5)
+#             if e == 'Timeout 30000ms exceeded.' and tries <= 3:
+#                 print("Trying again")
+#                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
+
+
+# # def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
+# #     tries = 0
+# #     with sync_playwright() as p:
+# #         try:
+
+# #             browser = p.firefox.launch()
+# #             # browser = p.chromium.launch()
+
+# #             context = browser.new_context()
+
+# #             page = context.new_page()
+
+# #             # stealth_sync(page)
+
+# #             page.goto(urlo)
+
+# #             # print('Before waiting')
+# #             waiting_around = page.locator(awaito)
+# #             waiting_around.wait_for()
+# #             # print("After waiting")
+
+# #             resulto = page.evaluate(javascript_code)
+
+# #             browser.close()
+
+# #             frame = pd.DataFrame.from_records(resulto)
+
+# #             frame['publication'] = publication
+
+# #             frame = create_search("Headline", frame)
+
+# #             frame['Rank'] = frame.index + 1
+
+# #             frame['scraped_datetime']= format_scrape_time 
+
+# #             frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
+
+# #             with open(f'{out_path}/latest.json', 'w') as f:
+# #                 frame.to_json(f, orient='records')
+
+# #             with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+# #                 frame.to_json(f, orient='records')
+
+# #             # print("Lenno: ", len(frame))
+# #             return frame 
+
+# #         except Exception as e:
+# #             tries += 1
+# #             print("Tries: ", tries)
+# #             browser.close()
+# #             print(e)
+# #             rand_delay(5)
+# #             if e == 'Timeout 30000ms exceeded.' and tries <= 3:
+# #                 print("Trying again")
+# #                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
 
 # def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 #     tries = 0
@@ -178,7 +233,8 @@ def bbc_shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 
 #             # stealth_sync(page)
 
-#             page.goto(urlo)
+#             page.goto(urlo, wait_until="domcontentloaded",
+#                     timeout=60_000)
 
 #             # print('Before waiting')
 #             waiting_around = page.locator(awaito)
@@ -220,588 +276,531 @@ def bbc_shot_grabber(urlo, publication, out_path, javascript_code, awaito):
 #                 print("Trying again")
 #                 shot_grabber(urlo, publication, out_path, javascript_code, awaito)
 
-def shot_grabber(urlo, publication, out_path, javascript_code, awaito):
-    tries = 0
-    with sync_playwright() as p:
-        try:
+# # %%
 
-            browser = p.firefox.launch()
-            # browser = p.chromium.launch()
+# # listo = []
+# dicto = {"Pushed": pub_scrape_time}
 
-            context = browser.new_context()
+# print("Scraping the SMH")
 
-            page = context.new_page()
-
-            # stealth_sync(page)
-
-            page.goto(urlo, wait_until="domcontentloaded",
-                    timeout=60_000)
-
-            # print('Before waiting')
-            waiting_around = page.locator(awaito)
-            waiting_around.wait_for()
-            # print("After waiting")
-
-            resulto = page.evaluate(javascript_code)
-
-            browser.close()
-
-            frame = pd.DataFrame.from_records(resulto)
-
-            frame['publication'] = publication
-
-            frame = create_search("Headline", frame)
-
-            frame['Rank'] = frame.index + 1
-
-            frame['scraped_datetime']= format_scrape_time 
-
-            frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
-
-            with open(f'{out_path}/latest.json', 'w') as f:
-                frame.to_json(f, orient='records')
-
-            with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-                frame.to_json(f, orient='records')
-
-            # print("Lenno: ", len(frame))
-            return frame 
-
-        except Exception as e:
-            tries += 1
-            print("Tries: ", tries)
-            browser.close()
-            print(e)
-            rand_delay(5)
-            if e == 'Timeout 30000ms exceeded.' and tries <= 3:
-                print("Trying again")
-                shot_grabber(urlo, publication, out_path, javascript_code, awaito)
-
-# %%
-
-# listo = []
-dicto = {"Pushed": pub_scrape_time}
-
-print("Scraping the SMH")
-
-try:
-    smh = shot_grabber('https://www.smh.com.au/', 'SMH', 'Archive/smh_top',
-        """
-        var contexto = document.querySelector('[data-an-name="Most Popular"]')
-        Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
-        let Headline = el.querySelector('a').innerText;
-        let Url = el.querySelector('a')['href']
-        return {Headline, Url};
-        })""",
-        '[data-an-name="Most Popular"]')
-    # listo.append(smh)
-    dicto['smh'] = smh.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-
-print("Scraping the ABC")
-try:
-    abc = shot_grabber('https://www.abc.net.au/news/justin', 'ABC', 'Archive/abc_top',
-    """
-        var contexto = document.querySelectorAll('[data-component="LinkList"]')[1]
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })""",
-        '[data-uri="coremedia://collection/10719986"]')
-    # listo.append(abc)
-    dicto['abc'] = abc.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-print("Scraping News")
-
-try:
-    news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
-        """
-        var contexto = document.querySelector('.most-popular-content')
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })""",
-        '.most-popular-content')
-    # listo.append(news)\
-    dicto['news'] = news.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-
-
-print("Scraping Graun")
 # try:
-#     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
+#     smh = shot_grabber('https://www.smh.com.au/', 'SMH', 'Archive/smh_top',
 #         """
-#          var contexto = document.querySelector('[data-link-name="Most viewed"]')
+#         var contexto = document.querySelector('[data-an-name="Most Popular"]')
+#         Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
+#         let Headline = el.querySelector('a').innerText;
+#         let Url = el.querySelector('a')['href']
+#         return {Headline, Url};
+#         })""",
+#         '[data-an-name="Most Popular"]')
+#     # listo.append(smh)
+#     dicto['smh'] = smh.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
+# print("Scraping the ABC")
+# try:
+#     abc = shot_grabber('https://www.abc.net.au/news/justin', 'ABC', 'Archive/abc_top',
+#     """
+#         var contexto = document.querySelectorAll('[data-component="LinkList"]')[1]
 #         Array.from(contexto.querySelectorAll('a'), el => {
 #         let Headline = el.innerText;
 #         let Url = el['href']
 #         return {Headline, Url};
 #         })""",
-#         '[data-link-name="Most viewed"]')
-#     listo.append(graun)
+#         '[data-uri="coremedia://collection/10719986"]')
+#     # listo.append(abc)
+#     dicto['abc'] = abc.to_dict(orient='records')
 # except Exception as e:
 #     print(e)
 
-try:
-    graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
-        """
-         var contexto = document.querySelector('[data-link-name="most-viewed"]')
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })""",
-        '[data-link-name="most-viewed"]')
-    # listo.append(graun)
-    dicto['graun'] = graun.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-
-print("Scraping The Age")
-
-try:
-    age = shot_grabber('https://www.theage.com.au/', "The Age", 'Archive/age'
-                      ,
-        """
-        var contexto = document.querySelector('[data-an-name="Most Popular"]')
-        Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
-        let Headline = el.querySelector('a').innerText;
-        let Url = el.querySelector('a')['href']
-        return {Headline, Url};
-        })""",
-        '[data-an-name="Most Popular"]')
-    # listo.append(age)
-    dicto['age'] = age.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-
-print("Scraping Brisbane times")
-
-try:
-    bris = shot_grabber('https://www.brisbanetimes.com.au/', "Brisbane Times", 'Archive/brisbane_times'
-                      ,
-        """
-        var contexto = document.querySelector('[data-an-name="Most Popular"]')
-        Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
-        let Headline = el.querySelector('a').innerText;
-        let Url = el.querySelector('a')['href']
-        return {Headline, Url};
-        })""",
-        '[data-an-name="Most Popular"]')
-    # listo.append(bris)
-    dicto['bris'] = bris.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-
-
-print("Scraping the BBC")
-try:
-    bbc = bbc_shot_grabber('https://www.bbc.com/news', 'bbc', 'Archive/bbc_top',
-    """
-var contexto = document.querySelector('[data-testid="illinois-grid-10"]');
-
-Array.from(
-  contexto.querySelectorAll('[data-testid="cambridge-card"] a'),
-  el => {
-    let Headline = el.querySelector('[data-testid="card-headline"]')?.innerText.trim();
-    let Url = el.getAttribute('href');
-    return { Headline, Url };
-  }
-);
-""",
-        '[data-testid="illinois-grid-10"]')
-
-    dicto['bbc'] = bbc.to_dict(orient='records')
-except Exception as e:
-    print(e)
-
-
-
-# %%
-
-def get_google(out_path):
-
-    google_news = GNews(language='en', country='AU', period='2h')
-    aus_news = google_news.get_top_news()
-
-    records = []
-    for thingo in aus_news:
-        record = {"Headline": thingo['title'], "Url": thingo['url'], 'publication': thingo['publisher']['title'],
-                "Publish datetime": thingo['published date']}
-        records.append(record)
-
-    frame = pd.DataFrame.from_records(records)
-    frame['scraped_datetime'] = format_scrape_time
-    frame['Rank'] = frame.index + 1
-
-    frame = create_search("Headline", frame)
-
-    frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
-
-    with open(f'{out_path}/latest.json', 'w') as f:
-        frame.to_json(f, orient='records')
-
-    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-        frame.to_json(f, orient='records')
-
-    return frame
-
-rand_delay(5)
-
-try:
-    print("Get Google News")
-    goog = get_google('Archive/google_top')
-    dicto['goog_news'] = goog.to_dict(orient='records')
-    # listo.append(goog)
-except Exception as e:
-    print(e)
-
-# %%
-
-def get_wiki(urlo, out_path):
-    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-    'Accept-Language': "en-GB,en-US;q=0.9,en;q=0.8",
-    "Referer": 'https://www.google.com',
-    "DNT":'1'}
-
-    wiki_r = requests.get(urlo, headers=headers)
-
-    if wiki_r.status_code != 404:
-
-        # print(wiki_r.url)
-
-        # print(wiki_r.text)
-
-        wiki_trends = json.loads(wiki_r.text)
-        wiki_trends = wiki_trends['items'][0]['articles']
-        # wiki_trends = wiki_trends[2:52]
-
-        # wiki_trends = [x['article'] for x in wiki_trends]
-
-
-
-        df = pd.DataFrame(wiki_trends)
-        df = df.rename(columns={"article": "Page", "views": "Views", 'rank': "Rank"})
-        # df['Page'] = df['Page'].str.replace("_", " ")
-
-        zdf = df.copy()
-        zdf = zdf[['Rank', 'Page', 'Views']]
-        zdf['scraped_datetime'] = format_scrape_time
-
-        frame = create_search("Page", zdf)
-
-        with open(f'{out_path}/latest.json', 'w') as f:
-            frame.to_json(f, orient='records')
-
-        with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-            frame.to_json(f, orient='records')
-        return frame 
-    
-rand_delay(5)
-
-try:
-    print("Getting Wiki")
-    # utc_now = datetime.datetime.utcnow()
-    utc_now = datetime.datetime.now(datetime.timezone.utc)
-    utc_then = utc_now - datetime.timedelta(days=1)
-
-    utc_month = datetime.date.strftime(utc_then, '%m')
-    utc_year = datetime.date.strftime(utc_then, '%Y')
-    utc_day = datetime.date.strftime(utc_then, '%d')
-
-    utc_reverse_date = utc_then.strftime('%Y-%m-%d')
-    utc_hour = utc_then.strftime('%H')
-
-    wiki_linko = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia.org/all-access/{utc_year}/{utc_month}/{utc_day}"
-    wiki = get_wiki(wiki_linko, 'Archive/wiki')
-    # listo.append(wiki)
-    dicto['wiki'] = wiki.to_dict(orient='records')
-except Exception as e:
-
-    print(e)
-
-# %%
-
-def get_goog_trends(out_path):
-
-    pytrend = TrendReq(hl='en-US', tz=360)
-
-    df = pytrend.trending_searches(pn='australia')
-    df.rename(columns={0: "Search"}, inplace=True)
-
-    df['scraped_datetime'] = format_scrape_time
-
-    zdf = df.copy()
-    zdf['Rank'] = zdf.index + 1
-
-    zdf = zdf[['Rank', 'Search', 'scraped_datetime']]
-
-    frame = create_search("Search", zdf)
-
-    with open(f'{out_path}/latest.json', 'w') as f:
-        frame.to_json(f, orient='records')
-
-    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-        frame.to_json(f, orient='records')
-    return frame
-rand_delay(5)
-
-# print("Get Aus google trends")
+# print("Scraping News")
 
 # try:
-#     goog_trendo = get_goog_trends("Archive/google")
-#     # listo.append(goog_trendo)
-#     dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
+#     news = shot_grabber('https://www.news.com.au/', 'News', 'Archive/newscom_top',
+#         """
+#         var contexto = document.querySelector('.most-popular-content')
+#         Array.from(contexto.querySelectorAll('a'), el => {
+#         let Headline = el.innerText;
+#         let Url = el['href']
+#         return {Headline, Url};
+#         })""",
+#         '.most-popular-content')
+#     # listo.append(news)\
+#     dicto['news'] = news.to_dict(orient='records')
 # except Exception as e:
 #     print(e)
 
-# cat = pd.concat(listo)
 
-# with open(f'combined/top_stories.json', 'w') as f:
-#     cat.to_json(f, orient='records')
 
+# print("Scraping Graun")
+# # try:
+# #     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
+# #         """
+# #          var contexto = document.querySelector('[data-link-name="Most viewed"]')
+# #         Array.from(contexto.querySelectorAll('a'), el => {
+# #         let Headline = el.innerText;
+# #         let Url = el['href']
+# #         return {Headline, Url};
+# #         })""",
+# #         '[data-link-name="Most viewed"]')
+# #     listo.append(graun)
+# # except Exception as e:
+# #     print(e)
+
+# try:
+#     graun = shot_grabber('https://www.theguardian.com/au', 'The Guardian', 'Archive/graun_top',
+#         """
+#          var contexto = document.querySelector('[data-link-name="most-viewed"]')
+#         Array.from(contexto.querySelectorAll('a'), el => {
+#         let Headline = el.innerText;
+#         let Url = el['href']
+#         return {Headline, Url};
+#         })""",
+#         '[data-link-name="most-viewed"]')
+#     # listo.append(graun)
+#     dicto['graun'] = graun.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
+# print("Scraping The Age")
+
+# try:
+#     age = shot_grabber('https://www.theage.com.au/', "The Age", 'Archive/age'
+#                       ,
+#         """
+#         var contexto = document.querySelector('[data-an-name="Most Popular"]')
+#         Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
+#         let Headline = el.querySelector('a').innerText;
+#         let Url = el.querySelector('a')['href']
+#         return {Headline, Url};
+#         })""",
+#         '[data-an-name="Most Popular"]')
+#     # listo.append(age)
+#     dicto['age'] = age.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
+# print("Scraping Brisbane times")
+
+# try:
+#     bris = shot_grabber('https://www.brisbanetimes.com.au/', "Brisbane Times", 'Archive/brisbane_times'
+#                       ,
+#         """
+#         var contexto = document.querySelector('[data-an-name="Most Popular"]')
+#         Array.from(contexto.querySelectorAll('[data-testid="article-headline"]'), el => {
+#         let Headline = el.querySelector('a').innerText;
+#         let Url = el.querySelector('a')['href']
+#         return {Headline, Url};
+#         })""",
+#         '[data-an-name="Most Popular"]')
+#     # listo.append(bris)
+#     dicto['bris'] = bris.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
 
+# print("Scraping the BBC")
+# try:
+#     bbc = bbc_shot_grabber('https://www.bbc.com/news', 'bbc', 'Archive/bbc_top',
+#     """
+# var contexto = document.querySelector('[data-testid="illinois-grid-10"]');
+
+# Array.from(
+#   contexto.querySelectorAll('[data-testid="cambridge-card"] a'),
+#   el => {
+#     let Headline = el.querySelector('[data-testid="card-headline"]')?.innerText.trim();
+#     let Url = el.getAttribute('href');
+#     return { Headline, Url };
+#   }
+# );
+# """,
+#         '[data-testid="illinois-grid-10"]')
+
+#     dicto['bbc'] = bbc.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
+
+# # %%
+
+# def get_google(out_path):
+
+#     google_news = GNews(language='en', country='AU', period='2h')
+#     aus_news = google_news.get_top_news()
 
+#     records = []
+#     for thingo in aus_news:
+#         record = {"Headline": thingo['title'], "Url": thingo['url'], 'publication': thingo['publisher']['title'],
+#                 "Publish datetime": thingo['published date']}
+#         records.append(record)
 
+#     frame = pd.DataFrame.from_records(records)
+#     frame['scraped_datetime'] = format_scrape_time
+#     frame['Rank'] = frame.index + 1
 
-# %%
+#     frame = create_search("Headline", frame)
 
-from dotenv import load_dotenv
-load_dotenv()
-from github import Github, UnknownObjectException, Auth
+#     frame = frame[['publication', 'scraped_datetime', 'Headline', 'Url', 'Rank', 'Search_var']]
 
-# %%
+#     with open(f'{out_path}/latest.json', 'w') as f:
+#         frame.to_json(f, orient='records')
 
+#     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#         frame.to_json(f, orient='records')
 
+#     return frame
 
+# rand_delay(5)
 
-# %%
+# try:
+#     print("Get Google News")
+#     goog = get_google('Archive/google_top')
+#     dicto['goog_news'] = goog.to_dict(orient='records')
+#     # listo.append(goog)
+# except Exception as e:
+#     print(e)
 
-# %%
+# # %%
 
-def send_to_git(stemmo, repo, what, frame):
+# def get_wiki(urlo, out_path):
+#     headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+#     'Accept-Language': "en-GB,en-US;q=0.9,en;q=0.8",
+#     "Referer": 'https://www.google.com',
+#     "DNT":'1'}
 
-    tokeny = os.environ['gitty']
-    latest = f'static/{what}.csv'
+#     wiki_r = requests.get(urlo, headers=headers)
 
-    github = Github(auth=Auth.Token(tokeny))
+#     if wiki_r.status_code != 404:
 
-    repository = github.get_user().get_repo(repo)
+#         # print(wiki_r.url)
 
-    jsony = frame.to_dict(orient='records')
-    content = json.dumps(jsony)
+#         # print(wiki_r.text)
 
-    def try_file(pathos):
-        try:
-            repository.get_contents(pathos)
-            return True
-        except UnknownObjectException as e:
-            return False
+#         wiki_trends = json.loads(wiki_r.text)
+#         wiki_trends = wiki_trends['items'][0]['articles']
+#         # wiki_trends = wiki_trends[2:52]
 
-    latters = repository.get_contents(latest)
-    repository.update_file(latest, f"updated_scraped_file_{stemmo}", content, latters.sha)
+#         # wiki_trends = [x['article'] for x in wiki_trends]
 
-# send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
-# %%
 
 
+#         df = pd.DataFrame(wiki_trends)
+#         df = df.rename(columns={"article": "Page", "views": "Views", 'rank': "Rank"})
+#         # df['Page'] = df['Page'].str.replace("_", " ")
 
+#         zdf = df.copy()
+#         zdf = zdf[['Rank', 'Page', 'Views']]
+#         zdf['scraped_datetime'] = format_scrape_time
 
+#         frame = create_search("Page", zdf)
 
+#         with open(f'{out_path}/latest.json', 'w') as f:
+#             frame.to_json(f, orient='records')
 
-def get_trending_topics(out_path):
+#         with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#             frame.to_json(f, orient='records')
+#         return frame 
+    
+# rand_delay(5)
 
-    url = "https://public.api.bsky.app/xrpc/app.bsky.unspecced.getTrendingTopics"
+# try:
+#     print("Getting Wiki")
+#     # utc_now = datetime.datetime.utcnow()
+#     utc_now = datetime.datetime.now(datetime.timezone.utc)
+#     utc_then = utc_now - datetime.timedelta(days=1)
 
-    response = requests.get(url)
-    response.raise_for_status()
+#     utc_month = datetime.date.strftime(utc_then, '%m')
+#     utc_year = datetime.date.strftime(utc_then, '%Y')
+#     utc_day = datetime.date.strftime(utc_then, '%d')
 
-    data = response.json()
+#     utc_reverse_date = utc_then.strftime('%Y-%m-%d')
+#     utc_hour = utc_then.strftime('%H')
 
-    topics = []
-    for topic in data.get('topics', []):
-        topics.append({
-            'Topic': topic.get('topic', ''),
-            'Url': topic.get('link', '')
-        })
+#     wiki_linko = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia.org/all-access/{utc_year}/{utc_month}/{utc_day}"
+#     wiki = get_wiki(wiki_linko, 'Archive/wiki')
+#     # listo.append(wiki)
+#     dicto['wiki'] = wiki.to_dict(orient='records')
+# except Exception as e:
 
-    df = pd.DataFrame(topics)
-    df.insert(0, 'Rank', range(1, len(df) + 1))
-    df['publication'] = 'Bsky'
-    df['scraped_datetime'] = format_scrape_time 
+#     print(e)
 
-    df = create_search("Topic", df)
+# # %%
 
-    df = df[['publication', 'scraped_datetime', 'Topic', 'Url', 'Rank', 'Search_var']]
+# def get_goog_trends(out_path):
 
-    with open(f'{out_path}/latest.json', 'w') as f:
-        df.to_json(f, orient='records')
+#     pytrend = TrendReq(hl='en-US', tz=360)
 
-    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-        df.to_json(f, orient='records')
+#     df = pytrend.trending_searches(pn='australia')
+#     df.rename(columns={0: "Search"}, inplace=True)
 
-    # print("Lenno: ", len(df))
+#     df['scraped_datetime'] = format_scrape_time
 
-    return df
+#     zdf = df.copy()
+#     zdf['Rank'] = zdf.index + 1
 
+#     zdf = zdf[['Rank', 'Search', 'scraped_datetime']]
 
-try:
-    print("Get Bluesky")
-    bsky = get_trending_topics('Archive/bsky')
-    dicto['bsky'] = bsky.to_dict(orient='records')
-    # listo.append(goog)
-except Exception as e:
-    print(e)
+#     frame = create_search("Search", zdf)
 
+#     with open(f'{out_path}/latest.json', 'w') as f:
+#         frame.to_json(f, orient='records')
 
+#     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#         frame.to_json(f, orient='records')
+#     return frame
+# rand_delay(5)
 
-##########
+# # print("Get Aus google trends")
 
+# # try:
+# #     goog_trendo = get_goog_trends("Archive/google")
+# #     # listo.append(goog_trendo)
+# #     dicto['goog_trends'] = goog_trendo.to_dict(orient='records')
+# # except Exception as e:
+# #     print(e)
 
-def get_google_trends_rss(urlo, out_path):
+# # cat = pd.concat(listo)
 
-    feedo = feedparser.parse(urlo)
+# # with open(f'combined/top_stories.json', 'w') as f:
+# #     cat.to_json(f, orient='records')
 
-    records = []
 
-    for entry in feedo['entries']:
-        record = {"Headline": entry['title'], 
-        'publication': "Google trends",
-        'published': entry['published'],
 
-        'scraped_datetime':format_scrape_time,
-        "Traffic":entry['ht_approx_traffic'], 
-        'Entry': entry['ht_news_item_title'], 
-        "Url": entry['ht_news_item_url']}
 
-        records.append(record)
 
-    frame = pd.DataFrame.from_records(records)
+# # %%
 
-    with open(f'{out_path}/latest.json', 'w') as f:
-        frame.to_json(f, orient='records')
+# from dotenv import load_dotenv
+# load_dotenv()
+# from github import Github, UnknownObjectException, Auth
 
-    with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
-        frame.to_json(f, orient='records')
+# # %%
 
-    return frame 
 
-try:
-    print("Google trends")
-    trendos = get_google_trends_rss('https://trends.google.com/trending/rss?geo=AU', 'Archive/google_trends_rss')
-    dicto['google_trends'] = trendos.to_dict(orient='records')
-except Exception as e:
-    print(e)
 
-#####
 
-from wiki_edits import get_wiki_edits
-from extract_entities import records_from_dicto, extract_entities
-import spacy
+# # %%
 
-try:
-    print("Getting Wikipedia most-edited articles")
-    wiki_edits = get_wiki_edits("Archive/wiki_edits")
-    dicto['wiki_edits'] = wiki_edits.to_dict(orient='records')
-except Exception as e:
-    print(e)
+# # %%
 
+# def send_to_git(stemmo, repo, what, frame):
 
-with open("Combined/top_stories.json", "w") as f:
-    json.dump(dicto, f)
+#     tokeny = os.environ['gitty']
+#     latest = f'static/{what}.csv'
 
-listo = []
+#     github = Github(auth=Auth.Token(tokeny))
 
-keys = list(dicto.keys())
-exclude = ['goog_trends', 'wiki', 'wiki_edits']
-keys = [x for x in keys if x not in exclude]
+#     repository = github.get_user().get_repo(repo)
 
-for keyo in keys:
-    inter = pd.DataFrame.from_records(dicto[keyo])
-    listo.append(inter)
+#     jsony = frame.to_dict(orient='records')
+#     content = json.dumps(jsony)
 
-out_data = pd.concat(listo)
+#     def try_file(pathos):
+#         try:
+#             repository.get_contents(pathos)
+#             return True
+#         except UnknownObjectException as e:
+#             return False
 
+#     latters = repository.get_contents(latest)
+#     repository.update_file(latest, f"updated_scraped_file_{stemmo}", content, latters.sha)
 
-def combiner(stemmo, data_dir,days=7):
+# # send_to_git(format_scrape_time, 'sk-blog', 'dash', out_data )
+# # %%
 
-    # Convert data_dir to Path object if it's a string
-    data_dir = pathlib.Path(data_dir)
 
-    # Calculate the cutoff datetime (x days ago)
-    cutoff_datetime = datetime.datetime.now() - datetime.timedelta(days=days)
 
-    # Find all JSON files and filter by date
-    all_files = []
 
-    for json_file in data_dir.glob("*.json"):
-        # Extract datetime from filename (format: YYYY_MM_DD_HH.json)
-        filename = json_file.stem  
 
-        try:
-            # Parse the datetime from filename
-            file_datetime = datetime.datetime.strptime(filename, "%Y_%m_%d_%H")
 
-            # Check if file is within the date range
-            if file_datetime >= cutoff_datetime:
-                all_files.append(json_file)
+# def get_trending_topics(out_path):
 
-        except ValueError:
+#     url = "https://public.api.bsky.app/xrpc/app.bsky.unspecced.getTrendingTopics"
 
-            continue
+#     response = requests.get(url)
+#     response.raise_for_status()
 
-    all_data = []
+#     data = response.json()
 
-    for json_file in sorted(all_files):
-        try:
-            with open(json_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+#     topics = []
+#     for topic in data.get('topics', []):
+#         topics.append({
+#             'Topic': topic.get('topic', ''),
+#             'Url': topic.get('link', '')
+#         })
 
-                if isinstance(data, list):
-                    all_data.extend(data)
-                else:
-                    all_data.append(data)
-        except (json.JSONDecodeError, IOError) as e:
-            print(f"Warning: Could not read {json_file}: {e}")
-            continue
+#     df = pd.DataFrame(topics)
+#     df.insert(0, 'Rank', range(1, len(df) + 1))
+#     df['publication'] = 'Bsky'
+#     df['scraped_datetime'] = format_scrape_time 
 
-    df = pd.DataFrame(all_data)
-    with open(f"Combined/{stemmo}.json", "w") as f: 
-        df.to_json(f)
+#     df = create_search("Topic", df)
 
-combiner("graun", 'Archive/graun_top/daily_dumps', days=1)
+#     df = df[['publication', 'scraped_datetime', 'Topic', 'Url', 'Rank', 'Search_var']]
 
-try:
-    print("Extracting named entities")
-    entity_sources = ["smh", "abc", "news", "graun", "age", "bris", "bbc", "goog_news"]
-    nlp = spacy.load("en_core_web_sm")
-    records = records_from_dicto(dicto, entity_sources)
-    entities = extract_entities(records, nlp)
-    entity_output = {
-        "scraped_datetime": format_scrape_time,
-        "sources": entity_sources,
-        "headline_count": len(records),
-        "entities": [
-            {"name": name, "type": info["type"], "count": info["count"], "mentions": info["mentions"]}
-            for name, info in entities.items()
-        ],
-    }
-    with open("Archive/entities/latest.json", "w") as f:
-        json.dump(entity_output, f)
-    with open(f"Archive/entities/dumps/{format_scrape_time}.json", "w") as f:
-        json.dump(entity_output, f)
-    with open("Combined/entities.json", "w") as f:
-        json.dump(entity_output, f)
-except Exception as e:
-    print(e)
+#     with open(f'{out_path}/latest.json', 'w') as f:
+#         df.to_json(f, orient='records')
+
+#     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#         df.to_json(f, orient='records')
+
+#     # print("Lenno: ", len(df))
+
+#     return df
+
+
+# try:
+#     print("Get Bluesky")
+#     bsky = get_trending_topics('Archive/bsky')
+#     dicto['bsky'] = bsky.to_dict(orient='records')
+#     # listo.append(goog)
+# except Exception as e:
+#     print(e)
+
+
+
+# ##########
+
+
+# def get_google_trends_rss(urlo, out_path):
+
+#     feedo = feedparser.parse(urlo)
+
+#     records = []
+
+#     for entry in feedo['entries']:
+#         record = {"Headline": entry['title'], 
+#         'publication': "Google trends",
+#         'published': entry['published'],
+
+#         'scraped_datetime':format_scrape_time,
+#         "Traffic":entry['ht_approx_traffic'], 
+#         'Entry': entry['ht_news_item_title'], 
+#         "Url": entry['ht_news_item_url']}
+
+#         records.append(record)
+
+#     frame = pd.DataFrame.from_records(records)
+
+#     with open(f'{out_path}/latest.json', 'w') as f:
+#         frame.to_json(f, orient='records')
+
+#     with open(f'{out_path}/daily_dumps/{format_scrape_time}.json', 'w') as f:
+#         frame.to_json(f, orient='records')
+
+#     return frame 
+
+# try:
+#     print("Google trends")
+#     trendos = get_google_trends_rss('https://trends.google.com/trending/rss?geo=AU', 'Archive/google_trends_rss')
+#     dicto['google_trends'] = trendos.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+# #####
+
+# from wiki_edits import get_wiki_edits
+# from extract_entities import records_from_dicto, extract_entities
+# import spacy
+
+# try:
+#     print("Getting Wikipedia most-edited articles")
+#     wiki_edits = get_wiki_edits("Archive/wiki_edits")
+#     dicto['wiki_edits'] = wiki_edits.to_dict(orient='records')
+# except Exception as e:
+#     print(e)
+
+
+# with open("Combined/top_stories.json", "w") as f:
+#     json.dump(dicto, f)
+
+# listo = []
+
+# keys = list(dicto.keys())
+# exclude = ['goog_trends', 'wiki', 'wiki_edits']
+# keys = [x for x in keys if x not in exclude]
+
+# for keyo in keys:
+#     inter = pd.DataFrame.from_records(dicto[keyo])
+#     listo.append(inter)
+
+# out_data = pd.concat(listo)
+
+
+# def combiner(stemmo, data_dir,days=7):
+
+#     # Convert data_dir to Path object if it's a string
+#     data_dir = pathlib.Path(data_dir)
+
+#     # Calculate the cutoff datetime (x days ago)
+#     cutoff_datetime = datetime.datetime.now() - datetime.timedelta(days=days)
+
+#     # Find all JSON files and filter by date
+#     all_files = []
+
+#     for json_file in data_dir.glob("*.json"):
+#         # Extract datetime from filename (format: YYYY_MM_DD_HH.json)
+#         filename = json_file.stem  
+
+#         try:
+#             # Parse the datetime from filename
+#             file_datetime = datetime.datetime.strptime(filename, "%Y_%m_%d_%H")
+
+#             # Check if file is within the date range
+#             if file_datetime >= cutoff_datetime:
+#                 all_files.append(json_file)
+
+#         except ValueError:
+
+#             continue
+
+#     all_data = []
+
+#     for json_file in sorted(all_files):
+#         try:
+#             with open(json_file, 'r', encoding='utf-8') as f:
+#                 data = json.load(f)
+
+#                 if isinstance(data, list):
+#                     all_data.extend(data)
+#                 else:
+#                     all_data.append(data)
+#         except (json.JSONDecodeError, IOError) as e:
+#             print(f"Warning: Could not read {json_file}: {e}")
+#             continue
+
+#     df = pd.DataFrame(all_data)
+#     with open(f"Combined/{stemmo}.json", "w") as f: 
+#         df.to_json(f)
+
+# combiner("graun", 'Archive/graun_top/daily_dumps', days=1)
+
+# try:
+#     print("Extracting named entities")
+#     entity_sources = ["smh", "abc", "news", "graun", "age", "bris", "bbc", "goog_news"]
+#     nlp = spacy.load("en_core_web_sm")
+#     records = records_from_dicto(dicto, entity_sources)
+#     entities = extract_entities(records, nlp)
+#     entity_output = {
+#         "scraped_datetime": format_scrape_time,
+#         "sources": entity_sources,
+#         "headline_count": len(records),
+#         "entities": [
+#             {"name": name, "type": info["type"], "count": info["count"], "mentions": info["mentions"]}
+#             for name, info in entities.items()
+#         ],
+#     }
+#     with open("Archive/entities/latest.json", "w") as f:
+#         json.dump(entity_output, f)
+#     with open(f"Archive/entities/dumps/{format_scrape_time}.json", "w") as f:
+#         json.dump(entity_output, f)
+#     with open("Combined/entities.json", "w") as f:
+#         json.dump(entity_output, f)
+# except Exception as e:
+#     print(e)
