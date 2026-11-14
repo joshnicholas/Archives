@@ -65,11 +65,16 @@ def create_search(what, frame):
     copier["Search_var"] = copier[what].map(lambda x: do_it(x))
     return copier
 
+    # {"key": "news", "publication": "News", "out_path": "Archive/newscom_top",
+    #  "url": "https://www.news.com.au/", "awaito": ".most-popular-content",
+    #  "javascript_code": """
+    #     var contexto = document.querySelector('.most-popular-content')
+    #     Array.from(contexto.querySelectorAll('a'), el => {
+    #     let Headline = el.innerText;
+    #     let Url = el['href']
+    #     return {Headline, Url};
+    #     })"""},
 
-# --- the 7 Playwright sites, as data instead of 7 separate sequential function calls ---
-# key: used for both dicto[...] and extract_entities' entity_sources list — keep the existing
-# short keys ("news", "bris", ...) since downstream code (records_from_dicto's entity_sources)
-# already expects them.
 SITES = [
     {"key": "smh", "publication": "SMH", "out_path": "Archive/smh_top",
      "url": "https://www.smh.com.au/", "awaito": '[data-an-name="Most Popular"]',
@@ -85,15 +90,6 @@ SITES = [
      "awaito": '[data-uri="coremedia://collection/10719986"]',
      "javascript_code": """
         var contexto = document.querySelectorAll('[data-component="LinkList"]')[1]
-        Array.from(contexto.querySelectorAll('a'), el => {
-        let Headline = el.innerText;
-        let Url = el['href']
-        return {Headline, Url};
-        })"""},
-    {"key": "news", "publication": "News", "out_path": "Archive/newscom_top",
-     "url": "https://www.news.com.au/", "awaito": ".most-popular-content",
-     "javascript_code": """
-        var contexto = document.querySelector('.most-popular-content')
         Array.from(contexto.querySelectorAll('a'), el => {
         let Headline = el.innerText;
         let Url = el['href']
@@ -143,6 +139,15 @@ SITES = [
 ]
 
 
+async def scroll_to_trigger_lazy_load(page, steps=10, step_px=800, pause_ms=200):
+    # some sites only populate widgets like "most popular" once they scroll into view
+    # (IntersectionObserver-driven lazy load) — a single teleport scrollTo() often doesn't
+    # fire that the way real incremental scroll events do, so step down the page instead
+    for _ in range(steps):
+        await page.mouse.wheel(0, step_px)
+        await page.wait_for_timeout(pause_ms)
+
+
 async def scrape_one(browser, site, max_tries=3):
     # tries counts THIS site's own retry attempts only — a timeout on one slow site never eats
     # into another site's own retry budget the way a shared/global counter would
@@ -151,6 +156,7 @@ async def scrape_one(browser, site, max_tries=3):
         try:
             page = await context.new_page()
             await page.goto(site["url"], wait_until="domcontentloaded", timeout=60_000)
+            await scroll_to_trigger_lazy_load(page)
             await page.locator(site["awaito"]).wait_for()
             resulto = await page.evaluate(site["javascript_code"])
             return site["key"], resulto
@@ -297,13 +303,28 @@ async def run_sync(key, func, *args):
         return key, None
 
 
+def once_per_day(func):
+    # both wiki sources only change once a day upstream, so there's no point hitting them
+    # on every hourly run — skip once a daily_dumps file already exists for today (Brisbane
+    # date, matching format_scrape_time), so a missed/failed run still gets picked up by
+    # the next hourly attempt instead of waiting for tomorrow
+    def wrapper(out_path):
+        date_prefix = format_scrape_time[:10]  # "YYYY_MM_DD"
+        dumps_dir = pathlib.Path(out_path) / "daily_dumps"
+        if dumps_dir.is_dir() and any(dumps_dir.glob(f"{date_prefix}_*.json")):
+            print(f"{out_path}: already scraped today, skipping")
+            return None
+        return func(out_path)
+    return wrapper
+
+
 NON_PLAYWRIGHT_SOURCES = [
     ("goog_news", get_google, ("Archive/google_top",)),
-    ("wiki", get_wiki, ("Archive/wiki",)),
+    ("wiki", once_per_day(get_wiki), ("Archive/wiki",)),
     ("bsky", get_trending_topics, ("Archive/bsky",)),
     ("google_trends", get_google_trends_rss,
      ("https://trends.google.com/trending/rss?geo=AU", "Archive/google_trends_rss")),
-    ("wiki_edits", get_wiki_edits, ("Archive/wiki_edits",)),
+    ("wiki_edits", once_per_day(get_wiki_edits), ("Archive/wiki_edits",)),
 ]
 
 
