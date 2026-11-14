@@ -27,6 +27,12 @@ try:
 except LookupError:
     nltk.download("wordnet")
 
+# force wordnet's LazyCorpusLoader to fully initialise here, on the main thread, before
+# scrape_everything() fans out to asyncio.to_thread workers that each call create_search ->
+# WordNetLemmatizer — concurrent first-touch of the lazy loader races and raises
+# AttributeError: 'WordNetCorpusReader' object has no attribute '_LazyCorpusLoader__args'
+nltk.corpus.wordnet.ensure_loaded()
+
 today = datetime.datetime.now()
 scrape_time = today.astimezone(pytz.timezone("Australia/Brisbane"))
 format_scrape_time = datetime.datetime.strftime(scrape_time, "%Y_%m_%d_%H")
@@ -303,7 +309,7 @@ NON_PLAYWRIGHT_SOURCES = [
 
 async def scrape_everything():
     async with async_playwright() as p:
-        browser = await p.firefox.launch()  # launched ONCE for all 7 sites
+        browser = await p.chromium.launch()  # launched ONCE for all 7 sites
         playwright_results, *non_playwright_results = await asyncio.gather(
             scrape_all_sites(browser, SITES),
             *(run_sync(key, func, *args) for key, func, args in NON_PLAYWRIGHT_SOURCES),
