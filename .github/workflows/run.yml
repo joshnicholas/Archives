@@ -33,6 +33,7 @@ jobs:
           cache: 'pip'
 
       - name: Cache Playwright browsers
+        id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright/
@@ -51,8 +52,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          playwright install --with-deps chromium
           python -m spacy download en_core_web_sm
+          playwright install-deps chromium
+
+      # the browser binary itself is restored by the cache step above when the key
+      # (tied to requirements.txt, which pins the playwright version) matches; only
+      # download it again on a cache miss
+      - name: Download Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: playwright install chromium
 
       - name: Jitter within the first 15 minutes of the hour
         if: github.event_name == 'schedule'

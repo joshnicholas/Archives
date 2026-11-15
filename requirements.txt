@@ -2,7 +2,7 @@ pandas
 duckdb==1.5.6
 nltk
 pytz
-playwright
+playwright==1.65.2
 GNews
 requests
 pytrends
