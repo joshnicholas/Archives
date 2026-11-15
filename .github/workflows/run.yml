@@ -62,12 +62,12 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: playwright install chromium
 
-      - name: Jitter within the first 15 minutes of the hour
-        if: github.event_name == 'schedule'
-        run: |
-          delay=$(( RANDOM % 900 ))
-          echo "Sleeping ${delay}s before scraping"
-          sleep "${delay}"
+      # - name: Jitter within the first 15 minutes of the hour
+      #   if: github.event_name == 'schedule'
+      #   run: |
+      #     delay=$(( RANDOM % 900 ))
+      #     echo "Sleeping ${delay}s before scraping"
+      #     sleep "${delay}"
 
       - name: 🍳 Scrape top stories
         run: python3 Scrapers/new_top_stories.py
