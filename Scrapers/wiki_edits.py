@@ -30,20 +30,17 @@ def get_wiki_edits(out_path):
             "scraped_datetime": format_scrape_time,
         })
 
-    df = pd.DataFrame(records)
-
-    with open(f"{out_path}/latest.json", "w") as f:
-        df.to_json(f, orient="records")
-
-    with open(f"{out_path}/daily_dumps/{format_scrape_time}.json", "w") as f:
-        df.to_json(f, orient="records")
-
-    return df
+    return pd.DataFrame(records)
 
 if __name__ == "__main__":
     print("Scraping Wikipedia most-edited articles")
     try:
-        wiki_edits = get_wiki_edits("Archive/wiki_edits")
+        out_path = "Archive/wiki_edits"
+        wiki_edits = get_wiki_edits(out_path)
+        with open(f"{out_path}/latest.json", "w") as f:
+            wiki_edits.to_json(f, orient="records")
+        with open(f"{out_path}/daily_dumps/{format_scrape_time}.json", "w") as f:
+            wiki_edits.to_json(f, orient="records")
         print(f"Got {len(wiki_edits)} articles")
     except Exception as e:
         print(e)

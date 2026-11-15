@@ -1,6 +1,7 @@
 import json
 import re
 import tempfile
+from datetime import date, timedelta
 from pathlib import Path
 
 import duckdb
@@ -39,6 +40,12 @@ def chunked(items: list, size: int) -> list:
 # filename rather than parsing scraped_datetime out of the file's own content means this works
 # even for the handful of legacy CSV files that don't carry a scraped_datetime field at all.
 YEAR_RE = re.compile(r"^(\d{4})")
+FULL_DATE_RE = re.compile(r"^(\d{4})[-_]?(\d{2})[-_]?(\d{2})")
+
+# Keep this many days of daily_dumps files behind every run, unconsolidated, instead of
+# sweeping all of them into parquet — leaves some recent raw dumps on disk to inspect or
+# compare against, rather than having to unpack a parquet file for anything from this month.
+KEEP_RECENT_DAYS = 7
 
 
 def year_of(dump_file: Path) -> str:
@@ -46,6 +53,14 @@ def year_of(dump_file: Path) -> str:
     if not match:
         raise ValueError(f"can't determine year from filename: {dump_file}")
     return match.group(1)
+
+
+def date_of(dump_file: Path) -> date | None:
+    match = FULL_DATE_RE.match(dump_file.stem)
+    if not match:
+        return None
+    year, month, day = (int(part) for part in match.groups())
+    return date(year, month, day)
 
 
 def classify(dump_file: Path) -> str:
@@ -72,11 +87,15 @@ def unwrap_double_encoded(dump_file: Path, out_path: Path) -> None:
 
 
 def consolidate(source_dir: Path) -> None:
+    cutoff = date.today() - timedelta(days=KEEP_RECENT_DAYS)
     dump_files = sorted(
-        p for p in source_dir.glob("daily_dumps/*") if p.suffix in (".json", ".csv")
+        p for p in source_dir.glob("daily_dumps/*")
+        if p.suffix in (".json", ".csv")
+        # unparseable dates are old legacy formats, not anything recent — consolidate them
+        and (date_of(p) is None or date_of(p) < cutoff)
     )
     if not dump_files:
-        return  # nothing scraped since last month's run — leave the existing file untouched
+        return  # nothing old enough to consolidate yet — leave the existing file untouched
 
     # One parquet file per calendar year, inside the source's own folder, rather than one
     # ever-growing monolithic file: keeps individual files well under GitHub's 100MB push

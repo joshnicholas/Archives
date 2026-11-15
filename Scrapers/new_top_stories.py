@@ -247,7 +247,6 @@ def get_wiki(out_path):
     zdf = df[["Rank", "Page", "Views"]].copy()
     zdf["scraped_datetime"] = format_scrape_time
     frame = create_search("Page", zdf)
-    write_outputs(out_path, frame)
     return frame
 
 
@@ -304,17 +303,31 @@ async def run_sync(key, func, *args):
 
 
 def once_per_day(func):
-    # both wiki sources only change once a day upstream, so there's no point hitting them
-    # on every hourly run — skip once a daily_dumps file already exists for today (Brisbane
-    # date, matching format_scrape_time), so a missed/failed run still gets picked up by
-    # the next hourly attempt instead of waiting for tomorrow
+    # both wiki sources only change once a day upstream, but we don't know exactly when,
+    # so fetch every hourly run regardless and only save a new daily_dumps entry when the
+    # fetched data actually differs from what's already in latest.json (ignoring
+    # scraped_datetime, which always differs) — that way we capture the real update
+    # whenever it happens, instead of guessing from today's date and risking a stale
+    # snapshot that then gets "skipped" for the rest of the day
     def wrapper(out_path):
-        date_prefix = format_scrape_time[:10]  # "YYYY_MM_DD"
-        dumps_dir = pathlib.Path(out_path) / "daily_dumps"
-        if dumps_dir.is_dir() and any(dumps_dir.glob(f"{date_prefix}_*.json")):
-            print(f"{out_path}: already scraped today, skipping")
+        frame = func(out_path)
+        if frame is None:
             return None
-        return func(out_path)
+
+        latest_path = pathlib.Path(out_path) / "latest.json"
+        cols = [c for c in frame.columns if c != "scraped_datetime"]
+        if latest_path.exists():
+            previous = pd.read_json(latest_path, orient="records")
+            try:
+                unchanged = previous[cols].to_dict("records") == frame[cols].to_dict("records")
+            except KeyError:
+                unchanged = False
+            if unchanged:
+                print(f"{out_path}: data unchanged since last save, skipping")
+                return None
+
+        write_outputs(out_path, frame)
+        return frame
     return wrapper
 
 
