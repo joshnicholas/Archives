@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          playwright install firefox
+          playwright install --with-deps chromium
           python -m spacy download en_core_web_sm
 
       - name: Jitter within the first 15 minutes of the hour
