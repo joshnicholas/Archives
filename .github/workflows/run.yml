@@ -9,7 +9,7 @@ on:
     # window: UTC hours 18-23 and 0-12 (i.e. every hour except 13-17, which is the Brisbane
     # 11pm-3am overnight gap). Triggers on the hour; the job itself adds up to 15 minutes of
     # jitter before scraping, so the scrape doesn't literally land on :00 every time.
-    - cron: "0 0-12,18-23 * * *"
+  - cron: "11 0-12,18-23 * * *"
 
 concurrency:
   group: scraper-workflow
